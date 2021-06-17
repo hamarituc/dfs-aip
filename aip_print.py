@@ -495,11 +495,13 @@ for i in range(0, len(PAGES_A3), 2):
         # notwendig.
         #
         placepage(OUT, OUT.pages[-2], PAGES_A3[i + 0], landscape = True, turn = False,
-            offx = 25 / 25.4 * 72.0, scale = 1.0 / math.sqrt(2),
-            shiftx = 17 / 25.4 * 72.0)
+            offx = 25 / 25.4 * 72.0, offy = 297 / 2 / 25.4 * 72.0,
+            scale = 0.68,
+            shiftx = 20 / 25.4 * 72.0, shifty = 210 / 2 / 25.4 * 72.0)
         placepage(OUT, OUT.pages[-1], PAGES_A3[i + 1], landscape = True, turn = True,
-            offx = 25 / 25.4 * 72.0, scale = 1.0 / math.sqrt(2),
-            shiftx = 17 / 25.4 * 72.0)
+            offx = 25 / 25.4 * 72.0, offy = 297 / 2 / 25.4 * 72.0,
+            scale = 0.68,
+            shiftx = 20 / 25.4 * 72.0, shifty = 210 / 2 / 25.4 * 72.0)
 
         marks_a4(OUT, OUT.pages[-2], cropmark = args.cropmark, punchmark = args.punchmark, foldmark = args.foldmark)
 
