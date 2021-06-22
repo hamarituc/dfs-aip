@@ -35,9 +35,9 @@ parser.add_argument(
     help = 'Faltmarken zeichnen')
 
 parser.add_argument(
-    '--a3-to-a4',
+    '--tc-to-a4',
     action = 'store_true',
-    help = 'A3-Karten auf A4 verkleinern')
+    help = 'Terminal Charts auf A4 verkleinern')
 
 parser.add_argument(
     'pdfs',
@@ -53,7 +53,7 @@ args = parser.parse_args()
 PAGES_A5  = []
 PAGES_A4N = []
 PAGES_A4  = []
-PAGES_A3  = []
+PAGES_TC  = []
 
 
 
@@ -143,13 +143,13 @@ for filename, pages in pdfs:
             lastlist = PAGES_A4
 
         elif ( box_width, box_height ) in [ ( 297, 380 ), ( 380, 297 ) ]:
-            pagedict['format'] = 'A3'
+            pagedict['format'] = 'TC'
 
             # Terminal Charts sind duplex, der Rest (Rollschemata) wird simplex
             # aufgearbeitet.
-            if not termchart and len(PAGES_A3) % 2 != 0:
-                PAGES_A3.append(None)
-            lastlist = PAGES_A3
+            if not termchart and len(PAGES_TC) % 2 != 0:
+                PAGES_TC.append(None)
+            lastlist = PAGES_TC
 
         else:
             raise Exception(
@@ -172,13 +172,13 @@ for filename, pages in pdfs:
         PAGES_A4N.append(None)
     if len(PAGES_A4) % 2 != 0:
         PAGES_A4.append(None)
-    if len(PAGES_A3) % 2 != 0:
-        PAGES_A3.append(None)
+    if len(PAGES_TC) % 2 != 0:
+        PAGES_TC.append(None)
 
 PAGES_A5.extend((-len(PAGES_A5) % 4) * [ None ])
 PAGES_A4N.extend((-len(PAGES_A4N) % 2) * [ None ])
 PAGES_A4.extend((-len(PAGES_A4) % 2) * [ None ])
-PAGES_A3.extend((-len(PAGES_A3) % 2) * [ None ])
+PAGES_TC.extend((-len(PAGES_TC) % 2) * [ None ])
 
 
 
@@ -470,19 +470,19 @@ for i in range(0, len(PAGES_A4), 2):
     p2.remove_unreferenced_resources()
 
 
-for i in range(0, len(PAGES_A3), 2):
-    if args.a3_to_a4:
+for i in range(0, len(PAGES_TC), 2):
+    if args.tc_to_a4:
         # Zwei leere A4-Zielseiten anlegen.
         OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
         OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
 
         #
-        # Format der A3-Seite
+        # Format der TC-Seite
         # - Lochrand:         25mm
         # - nutzbare Breite: 355mm
         # - nutzbare Höhe:   297mm
         #
-        # Firmat der A4-Seite
+        # Format der A4-Seite
         # - Lochrand:         17mm
         # - nutzbare Breite: 260mm
         # - nutzbare Höhe:   210mm
@@ -494,11 +494,11 @@ for i in range(0, len(PAGES_A3), 2):
         # Die Höhe ist bschränkend. Es ist keine Verschiebung in y-Richtung
         # notwendig.
         #
-        placepage(OUT, OUT.pages[-2], PAGES_A3[i + 0], landscape = True, turn = False,
+        placepage(OUT, OUT.pages[-2], PAGES_TC[i + 0], landscape = True, turn = False,
             offx = 25 / 25.4 * 72.0, offy = 297 / 2 / 25.4 * 72.0,
             scale = 0.68,
             shiftx = 20 / 25.4 * 72.0, shifty = 210 / 2 / 25.4 * 72.0)
-        placepage(OUT, OUT.pages[-1], PAGES_A3[i + 1], landscape = True, turn = True,
+        placepage(OUT, OUT.pages[-1], PAGES_TC[i + 1], landscape = True, turn = True,
             offx = 25 / 25.4 * 72.0, offy = 297 / 2 / 25.4 * 72.0,
             scale = 0.68,
             shiftx = 20 / 25.4 * 72.0, shifty = 210 / 2 / 25.4 * 72.0)
@@ -510,8 +510,8 @@ for i in range(0, len(PAGES_A3), 2):
         OUT.add_blank_page(page_size = ( 420 / 25.4 * 72.0, 297 / 25.4 * 72.0 ))
         OUT.add_blank_page(page_size = ( 420 / 25.4 * 72.0, 297 / 25.4 * 72.0 ))
 
-        placepage(OUT, OUT.pages[-2], PAGES_A3[i + 0], landscape = True, turn = False)
-        placepage(OUT, OUT.pages[-1], PAGES_A3[i + 1], landscape = True, turn = True)
+        placepage(OUT, OUT.pages[-2], PAGES_TC[i + 0], landscape = True, turn = False)
+        placepage(OUT, OUT.pages[-1], PAGES_TC[i + 1], landscape = True, turn = True)
 
         marks_a3(OUT, OUT.pages[-2], cropmark = args.cropmark, punchmark = args.punchmark, foldmark = args.foldmark)
 
