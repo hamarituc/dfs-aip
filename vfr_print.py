@@ -273,7 +273,7 @@ def placepage(pdf, target, source,
     commands.append(( [ name ],                   pikepdf.Operator('Do') ))
     commands.append(( [],                         pikepdf.Operator('Q')  ))
 
-    target.page_contents_add(pdf.make_stream(pikepdf.unparse_content_stream(commands)))
+    targetpage.contents_add(pikepdf.unparse_content_stream(commands))
 
 
 def pdfcmds_circle(x, y, r):
@@ -322,7 +322,7 @@ def marks_a5(pdf, page, cropmark = False, punchmark = False, foldmark = False):
         commands.extend(pdfcmds_circle((297 / 2 + 12) / 25.4 * 72.0, 185.0 / 25.4 * 72.0, 2 / 25.4 * 72.0))
         commands.append(( [],      pikepdf.Operator('Q') ))
 
-    page.page_contents_add(pdf.make_stream(pikepdf.unparse_content_stream(commands)))
+    pikepdf.Page(page).contents_add(pikepdf.unparse_content_stream(commands))
 
 
 def marks_a4(pdf, page, cropmark = False, punchmark = False, foldmark = False):
@@ -367,7 +367,7 @@ def marks_a4(pdf, page, cropmark = False, punchmark = False, foldmark = False):
         commands.append(( [],                                      pikepdf.Operator('S') ))
         commands.append(( [],                                      pikepdf.Operator('Q') ))
 
-    page.page_contents_add(pdf.make_stream(pikepdf.unparse_content_stream(commands)))
+    pikepdf.Page(page).contents_add(pikepdf.unparse_content_stream(commands))
 
 
 def marks_a3(pdf, page, cropmark = False, punchmark = False, foldmark = False):
@@ -423,7 +423,7 @@ def marks_a3(pdf, page, cropmark = False, punchmark = False, foldmark = False):
         commands.append(( [],                                       pikepdf.Operator('S') ))
         commands.append(( [],                                       pikepdf.Operator('Q') ))
 
-    page.page_contents_add(pdf.make_stream(pikepdf.unparse_content_stream(commands)))
+    pikepdf.Page(page).contents_add(pikepdf.unparse_content_stream(commands))
 
 
 
