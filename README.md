@@ -140,7 +140,7 @@ Das Skript stellt zudem folgende Optionen bereit.
 
 ### AIP IFR
 
-**TODO:** Das Skript `ifr_print.py? ist noch in Arbeit.
+**TODO:** Das Skript `ifr_print.py` ist noch in Arbeit.
 
 
 Drucken, schneiden und lochen
