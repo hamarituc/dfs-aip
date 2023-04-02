@@ -18,8 +18,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import aip.fetch
 import argparse
+
+from aip.cache import AipCache
+
 
 
 parser = argparse.ArgumentParser(
@@ -47,22 +49,13 @@ parser.add_argument(
     action = 'store_true',
     help = 'Debug-Ausgabe erzeugen')
 
+parser.add_argument(
+    '--refresh',
+    action = 'store_true',
+    help = 'Aktualisierung des Caches erzwingen')
+
 args = parser.parse_args()
 
 
-aip.fetch.get_toc(args.type)
-
-
-#
-# TODO: Seiten herunterladen
-#
-
-# def fetch_docurl(url):
-#     response = requests.get(url)
-#     response.raise_for_status()
-# 
-#     soup = BeautifulSoup(response.content, 'html.parser')
-#     soup = soup.find('header')
-#     soup = soup.find('a', target = '_blank')
-# 
-#     return soup['href']
+cache = AipCache()
+cache.fetch(args.type, debug = args.debug, refresh = args.refresh)

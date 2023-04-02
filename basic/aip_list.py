@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 #
 # Copyright (C) 2022-2023 Mario Haustein, mario@mariohaustein.de
 #
@@ -16,14 +18,35 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-TYPES = \
-{
-    'VFR':
-    {
-        'url': 'https://aip.dfs.de/basicVFR',
-    },
-    'IFR':
-    {
-        'url': 'https://aip.dfs.de/basicIFR',
-    },
-}
+import argparse
+
+from aip.cache import AipCache
+
+
+
+parser = argparse.ArgumentParser(
+        description = "AIP-Daten herunterladen"
+    )
+
+type_group = parser.add_mutually_exclusive_group()
+
+type_group.add_argument(
+    '--vfr',
+    action = 'store_const',
+    dest = 'type',
+    const = 'VFR',
+    help = 'AIP VFR')
+
+type_group.add_argument(
+    '--ifr',
+    action = 'store_const',
+    dest = 'type',
+    const = 'IFR',
+    help = 'AIP IFR')
+
+args = parser.parse_args()
+
+
+cache = AipCache()
+for aiptype, airac, filename in cache.list(args.type):
+    print("%3s  %s  %s" % ( aiptype, airac.isoformat(), filename ))
