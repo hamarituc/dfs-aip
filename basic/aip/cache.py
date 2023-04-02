@@ -122,6 +122,17 @@ class AipCache:
 
 
     #
+    # Inhaltsverzeichnis anhand von Typ und ggf. AIRAC-Datum bestimmen
+    #
+    def get(self, aiptype, airac = None):
+        for _aiptype, _airac, filename in self.list(aiptype):
+            if airac is None or airac == _airac:
+                return ( _aiptype, _airac, filename )
+
+        return None
+
+
+    #
     # AIP-Inhaltsverzeichnis herunterladen
     #
     def fetch(self, aiptype: str, debug: bool = False, refresh: bool = False):
