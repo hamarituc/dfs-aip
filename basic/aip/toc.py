@@ -34,6 +34,7 @@ class AipToc:
             self.toc_raw = json.load(f)
 
         self.toc = self._parse(self.toc_raw)
+        self._numerate(self.toc, 0)
 
 
     def _parse(self, entry, path = None):
@@ -240,16 +241,23 @@ class AipToc:
         raise ValueError("Unerwartete Seite '%s' in Abschnitt '%s'" % ( entry['name'], " ".join(path) ))
 
 
-    def _filter_ad_charts(self):
-        pass
+    def _numerate(self, entry, num):
+        if 'folder' not in entry:
+            num += 1
+            entry['num'] = num
+            return num
 
+        lastnum = num
+        for nextentry in entry['folder']:
+            lastnum = self._numerate(nextentry, lastnum)
 
-    def _numerate(self):
-        pass
+        if lastnum is None or lastnum == num:
+            return None
 
+        entry['numfirst'] = num + 1
+        entry['numlast']  = lastnum
 
-    def _ranges(self):
-        pass
+        return lastnum
 
 
     def filter(self):
