@@ -184,7 +184,7 @@ class AipToc:
                 if path[1] != "2" and match[2] == "2":
                     return None, None, None, None
 
-                return None, match[3], match[4], match[5]
+                return None, match[3], match[4], match[6]
 
         # Streckenkarten haben keine Seitennummern
         if len(path) == 3 and path[0] == "ENR" and path[1] == "6":
