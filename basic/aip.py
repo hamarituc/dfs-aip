@@ -19,8 +19,52 @@
 #
 
 import argparse
+import datetime
 
 from aip.cache import AipCache
+from aip.toc import AipToc
+
+
+
+def page_list_tree(entry, show, indent = []):
+    line = ""
+
+    if show['num']:
+        if 'folder' in entry:
+            line += "%4d - %4d " % ( entry['numfirst'], entry['numlast'] )
+        else:
+            line += "    %4d    " % ( entry['num'] )
+
+    if show['folder'] and show['tree']:
+        for idx, last in enumerate(indent):
+            if idx + 1 >= len(indent):
+                line += "+- "
+            elif last:
+                line += "   "
+            else:
+                line += "|  "
+
+    if show['prefix']:
+        if 'prefix' in entry:
+            line += entry['prefix']
+        if show['title'] and 'title' in entry:
+            line += ": "
+
+    if show['title'] and 'title' in entry:
+        line += entry['title']
+
+    if (show['prefix'] or show['title']) and \
+       'prefix' not in entry and \
+       'title' not in entry:
+        line += entry['name']
+
+    if show['folder'] and 'folder' in entry or \
+       show['pages'] and 'folder' not in entry:
+        print(line)
+
+    if 'folder' in entry:
+        for idx, e in enumerate(entry['folder']):
+            page_list_tree(e, show, indent = indent + [ idx + 1 >= len(entry['folder']) ])
 
 
 
@@ -49,7 +93,31 @@ def toc_delete(args):
 
 
 def page_list(args):
-    pass
+    cache = AipCache(basedir = args.cache)
+    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
+    aiptype, airac, filename = cache.get(args.type, airac)
+    toc = AipToc(filename)
+
+    show = \
+    {
+        'num':    args.num,
+        'tree':   args.tree,
+        'prefix': args.prefix,
+        'title':  args.title,
+        'folder': args.folder,
+        'pages':  args.pages,
+    }
+
+    if not (show['prefix'] or show['title']):
+        show['tree']   = True
+        show['prefix'] = True
+        show['title']  = True
+
+    if not (show['folder'] or show['pages']):
+        show['folder'] = True
+        show['pages']  = True
+
+    page_list_tree(toc.toc, show)
 
 
 def page_fetch(args):
@@ -180,7 +248,38 @@ command_page_list = commands_page.add_parser(
 
 parse_type(command_page_list)
 parse_airac(command_page_list)
-parse_filter(command_page_list)
+
+command_page_list.add_argument(
+    '--folder',
+    action = 'store_true',
+    help = "Abschnitte anzeigen")
+
+command_page_list.add_argument(
+    '--pages',
+    action = 'store_true',
+    help = "Seiten anzeigen")
+
+command_page_list.add_argument(
+    '--num',
+    action = 'store_true',
+    help = "Interne Seitennummerierung anzeigen")
+
+command_page_list.add_argument(
+    '--tree',
+    action = 'store_true',
+    help = "Baumstruktur anzeigen")
+
+command_page_list.add_argument(
+    '--prefix',
+    action = 'store_true',
+    help = "Präfix anzeigen")
+
+command_page_list.add_argument(
+    '--title',
+    action = 'store_true',
+    help = "Titel anzeigen")
+
+
 
 command_page_list.set_defaults(func = page_list)
 
