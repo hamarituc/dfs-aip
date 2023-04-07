@@ -267,17 +267,109 @@ class AipToc:
         return lastnum
 
 
-    def filter(self):
-        pass
+    def filter(self, prefixes, buddy = False):
+        marker = []
+
+        # Grenzen in Seitennummern auflösen
+        for prefix in prefixes:
+            if isinstance(prefix, tuple):
+                prefixfirst, prefixlast = prefix
+                if prefixfirst not in self.index_prefix:
+                    raise KeyError("Unbekannter Abschnitt '%s'" % prefixfirst)
+                if prefixlast not in self.index_prefix:
+                    raise KeyError("Unbekannter Abschnitt '%s'" % prefixlast)
+
+                entryfirst = self.index_prefix[prefixfirst]
+                entrylast  = self.index_prefix[prefixlast]
+
+                numfirst = entryfirst['numfirst'] if 'numfirst' in entryfirst else entryfirst['num']
+                numlast  = entrylast['numlast']   if 'numlast'  in entrylast  else entrylast['num']
+                if numfirst > numlast:
+                    raise ValueError("Ungültiger Bereich '%s'-'%s'. Anfang muss vor dem Ende liegen." % ( prefixfirst, prefixlast ))
+
+            else:
+                if prefix not in self.index_prefix:
+                    raise KeyError("Unbekannter Abschnitt '%s'" % prefix)
+
+                entryfirst = self.index_prefix[prefix]
+                entrylast  = entryfirst
+
+            marker.append(( entryfirst['numfirst'] if 'numfirst' in entryfirst else entryfirst['num'],  1 ))
+            marker.append(( entryfirst['numlast']  if 'numlast'  in entrylast  else entrylast['num'],  -1 ))
+
+        # Effektive Grenzen bestimmen (Marzullo-Algorithmus)
+        marker = marker.sort(key = lambda x : ( x[0], -x[1] ))
+        count = 0
+        currstart = None
+        currstop  = None
+        ranges = []
+
+        for num, diff in marker:
+            newcount = count + diff
+
+            if count == 0 and newcount > 0:
+                # Ein neues Intervall beginnt
+                if currstop is not None and currstop + 1 < num:
+                    # Das alte Intervall abschließen und ein neues beginnen.
+                    # Andernfalls verlängen wir ein bereits gefundenes
+                    # Intervall schlicht.
+                    ranges.append(( currstart, currstop ))
+                    currstart = num
+
+                currstop = None
+
+            elif count > 0 and newcount == 0:
+                # Das aktuelle Intervall endet
+                currstop = num
+
+            count = newcount
+
+        if currstart is not None and currstop is not None:
+            ranges.append(( currstart, currstop ))
+
+        # Intervalle ausnormalisieren
+        pages = []
+        for start, stop in ranges:
+            pages.extend(list(range(start, stop + 1)))
+
+        # Ggf. Vor- und Rückseiten ergänzen
+        pagepairs = []
+        for num in pages:
+            pagecurr = self.index_num[num]
+
+            if pagecurr['odd']:
+                pagenext = self.index_num[num + 1] if num < len(self.index_num) - 1 else None
+
+                # Ist die Folgeseite gerade?
+                if pagenext is not None and pagenext['odd']:
+                    pagenext = None
+
+                if num + 1 in pages or buddy:
+                    pagepairs.append(( pagecurr, pagenext ))
+                else:
+                    pagepairs.append(( pagecurr, None ))
+
+            else:
+                # Die gerade Seite haben wir bereits zusammen mit der ungeraden
+                # Seite ausgegeben.
+                if num - 1 in pages:
+                    continue
+
+                pageprev = self.index_num[num - 1] if num > 1 else None
+
+                # Ist die Vorgängerseite ungerade? Theoretisch muss zu jeder
+                # geraden Seite eine ungerade Seite existieren. Aber wir prüfen
+                # hier zur Sicherheit ab.
+                if pageprev is not None and not pageprev['odd']:
+                    pageprev = None
+
+                if buddy:
+                    pagepairs.append(( pageprev, pagecurr ))
+                else:
+                    pagepairs.append(( None, pagecurr ))
+
+        return pagepairs
 
 
     def fetchpage(self):
         pass
-
-
-#def filter_toc(toc, aiptype: str, prefix = None):
-#    if prefix is None:
-#        result = []
-#        for entry in toc['folder']:
-#
-#    pass
