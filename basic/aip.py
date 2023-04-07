@@ -1,0 +1,209 @@
+#!/bin/env python3
+
+#
+# Copyright (C) 2022-2023 Mario Haustein, mario@mariohaustein.de
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
+import argparse
+
+from aip.cache import AipCache
+
+
+
+def toc_fetch(args):
+    cache = AipCache(basedir = args.cache)
+    cache.fetch(args.type, debug = True, refresh = args.refresh)
+
+
+def toc_list(args):
+    if args.vfr == args.ifr:
+        filtertype = None
+    elif args.vfr:
+        filtertype = 'VFR'
+    elif args.ifr:
+        filtertype = 'IFR'
+    else:
+        filtertype = None
+
+    cache = AipCache(basedir = args.cache)
+    for aiptype, airac, filename in cache.list(filtertype):
+        print("%3s  %s  %s" % ( aiptype, airac.isoformat(), filename ))
+
+
+def toc_delete(args):
+    pass
+
+
+def page_list(args):
+    pass
+
+
+def page_fetch(args):
+    pass
+
+
+def page_purge(args):
+    pass
+
+
+
+def parse_type(parser):
+    group = parser.add_mutually_exclusive_group(required = True)
+
+    group.add_argument(
+        '--vfr',
+        action = 'store_const',
+        dest = 'type',
+        const = 'VFR',
+        help = "AIP VFR")
+
+    group.add_argument(
+        '--ifr',
+        action = 'store_const',
+        dest = 'type',
+        const = 'IFR',
+        help = "AIP IFR")
+
+
+def parse_type_multi(parser):
+    group = parser.add_argument_group("Typ")
+
+    group.add_argument(
+        '--vfr',
+        action = 'store_true',
+        help = "AIP VFR")
+
+    group.add_argument(
+        '--ifr',
+        action = 'store_true',
+        help = "AIP IFR")
+
+
+def parse_refresh(parser):
+    parser.add_argument(
+        '-r', '--refresh',
+        action = 'store_true',
+        help = "Aktualisierung des Caches erzwingen")
+
+
+def parse_airac(parser):
+    parser.add_argument(
+        '-a', '--airac',
+        type = str,
+        metavar = "YYYY-MM-DD",
+        help = "AIRAC-Datum")
+
+
+def parse_filter(parser):
+    parser.add_argument(
+        '-f', '--filter',
+        type = str,
+        metavar = "Abschnit || von-bis",
+        nargs = '+',
+        help = "Filter")
+
+
+parser = argparse.ArgumentParser(
+        description = "Zugriff auf das Luftfahrthandbuch AIP"
+    )
+
+parser.add_argument(
+    '-c', '--cache',
+    type = str,
+    metavar = "DIR",
+    help = "Cache-Verzeichnis")
+
+
+commands = parser.add_subparsers(required = True)
+
+
+command_toc = commands.add_parser(
+    'toc',
+    description = "Inhaltsverzeichnisse verwalten")
+
+commands_toc = command_toc.add_subparsers(required = True)
+
+
+commands_toc_fetch = commands_toc.add_parser(
+    'fetch',
+    description = "Inhaltsverzeichnis herunterladen")
+
+parse_type(commands_toc_fetch)
+parse_refresh(commands_toc_fetch)
+
+commands_toc_fetch.set_defaults(func = toc_fetch)
+
+
+command_toc_list = commands_toc.add_parser(
+    'list',
+    description = "Inhaltsverzeichnisse anzeigen")
+
+parse_type_multi(command_toc_list)
+
+command_toc_list.set_defaults(func = toc_list)
+
+
+command_toc_delete = commands_toc.add_parser(
+    'delete',
+    description = "Inhaltsverzeichnis löschen")
+
+parse_type(command_toc_delete)
+parse_airac(command_toc_delete)
+
+command_toc_delete.set_defaults(func = toc_delete)
+
+
+command_page = commands.add_parser(
+    'page',
+    description = "Seiten verwalten")
+
+commands_page = command_page.add_subparsers(required = True)
+
+
+command_page_list = commands_page.add_parser(
+    'list',
+    description = "Seiten anzeigen")
+
+parse_type(command_page_list)
+parse_airac(command_page_list)
+parse_filter(command_page_list)
+
+command_page_list.set_defaults(func = page_list)
+
+
+command_page_fetch = commands_page.add_parser(
+    'fetch',
+    description = "Seiten herunterladen")
+
+parse_type(command_page_fetch)
+parse_refresh(command_page_fetch)
+parse_airac(command_page_fetch)
+parse_filter(command_page_fetch)
+
+command_page_fetch.set_defaults(func = page_fetch)
+
+
+command_page_purge = commands_page.add_parser(
+    'purge',
+    description = "Überflüssige Seiten löschen")
+
+command_page_purge.set_defaults(func = page_purge)
+
+
+args = parser.parse_args()
+
+args.func(args)
