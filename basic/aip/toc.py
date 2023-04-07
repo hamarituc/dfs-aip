@@ -34,6 +34,9 @@ class AipToc:
             self.toc_raw = json.load(f)
 
         self.toc = self._parse(self.toc_raw)
+
+        self.index_num = {}
+        self.index_prefix = {}
         self._numerate(self.toc, 0)
 
 
@@ -242,9 +245,13 @@ class AipToc:
 
 
     def _numerate(self, entry, num):
+        if 'prefix' in entry:
+            self.index_prefix[entry['prefix']] = entry
+
         if 'folder' not in entry:
             num += 1
             entry['num'] = num
+            self.index_num[num] = entry
             return num
 
         lastnum = num
