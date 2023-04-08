@@ -147,6 +147,10 @@ def page_filter(args):
     toc = AipToc(filename)
     pages = toc.filter(prefixes)
 
+    if args.pairs:
+        page_pairs(toc.pairs(pages, pairs = True))
+        return
+
     for p in pages:
         if 'prefix' in p and 'title' in p:
             print("%s:\t%s" % ( p['prefix'], p['title'] ))
@@ -156,6 +160,23 @@ def page_filter(args):
             print(p['title'])
         else:
             print(p['name'])
+
+
+def page_pairs(pagepairs):
+    for podd, peven in pagepairs:
+        if podd is None:
+            print("V  ---")
+        elif 'prefix' in podd:
+            print("V  %s" % podd['prefix'])
+        else:
+            print("V  %s" % podd['name'])
+
+        if peven is None:
+            print("R  ---")
+        elif 'prefix' in peven:
+            print("R  %s" % peven['prefix'])
+        else:
+            print("R  %s" % peven['name'])
 
 
 def page_fetch(args):
@@ -327,6 +348,11 @@ command_page_filter = commands_page.add_parser(
 parse_type(command_page_filter)
 parse_airac(command_page_filter)
 parse_filter(command_page_filter)
+
+command_page_filter.add_argument(
+    '--pairs',
+    action = 'store_true',
+    help = "Vorder- und Rückseiten anzeigen")
 
 command_page_filter.set_defaults(func = page_filter)
 

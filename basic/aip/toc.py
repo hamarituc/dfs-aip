@@ -267,7 +267,7 @@ class AipToc:
         return lastnum
 
 
-    def filter(self, prefixes, buddy = False):
+    def filter(self, prefixes):
         if prefixes is None:
             return self.index_num.values()
 
@@ -343,10 +343,13 @@ class AipToc:
 
         return pages
 
+
+    def pairs(self, pages, pairs = False):
         # Ggf. Vor- und Rückseiten ergänzen
         pagepairs = []
-        for num in pages:
-            pagecurr = self.index_num[num]
+
+        for pagecurr in pages:
+            num = pagecurr['num']
 
             if pagecurr['odd']:
                 pagenext = self.index_num[num + 1] if num < len(self.index_num) - 1 else None
@@ -355,18 +358,18 @@ class AipToc:
                 if pagenext is not None and pagenext['odd']:
                     pagenext = None
 
-                if num + 1 in pages or buddy:
+                if pagenext in pages or pairs:
                     pagepairs.append(( pagecurr, pagenext ))
                 else:
                     pagepairs.append(( pagecurr, None ))
 
             else:
+                pageprev = self.index_num[num - 1] if num > 1 else None
+
                 # Die gerade Seite haben wir bereits zusammen mit der ungeraden
                 # Seite ausgegeben.
-                if num - 1 in pages:
+                if pageprev in pages:
                     continue
-
-                pageprev = self.index_num[num - 1] if num > 1 else None
 
                 # Ist die Vorgängerseite ungerade? Theoretisch muss zu jeder
                 # geraden Seite eine ungerade Seite existieren. Aber wir prüfen
@@ -374,7 +377,7 @@ class AipToc:
                 if pageprev is not None and not pageprev['odd']:
                     pageprev = None
 
-                if buddy:
+                if pairs:
                     pagepairs.append(( pageprev, pagecurr ))
                 else:
                     pagepairs.append(( None, pagecurr ))
