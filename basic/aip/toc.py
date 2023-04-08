@@ -268,6 +268,9 @@ class AipToc:
 
 
     def filter(self, prefixes, buddy = False):
+        if prefixes is None:
+            return self.index_num.values()
+
         marker = []
 
         # Grenzen in Seitennummern auflösen
@@ -295,10 +298,10 @@ class AipToc:
                 entrylast  = entryfirst
 
             marker.append(( entryfirst['numfirst'] if 'numfirst' in entryfirst else entryfirst['num'],  1 ))
-            marker.append(( entryfirst['numlast']  if 'numlast'  in entrylast  else entrylast['num'],  -1 ))
+            marker.append(( entrylast['numlast']   if 'numlast'  in entrylast  else entrylast['num'],  -1 ))
 
         # Effektive Grenzen bestimmen (Marzullo-Algorithmus)
-        marker = marker.sort(key = lambda x : ( x[0], -x[1] ))
+        marker.sort(key = lambda x : ( x[0], -x[1] ))
         count = 0
         currstart = None
         currstop  = None
@@ -309,7 +312,10 @@ class AipToc:
 
             if count == 0 and newcount > 0:
                 # Ein neues Intervall beginnt
-                if currstop is not None and currstop + 1 < num:
+                if currstop is None:
+                    currstart = num
+
+                elif currstop + 1 < num:
                     # Das alte Intervall abschließen und ein neues beginnen.
                     # Andernfalls verlängen wir ein bereits gefundenes
                     # Intervall schlicht.
@@ -319,7 +325,9 @@ class AipToc:
                 currstop = None
 
             elif count > 0 and newcount == 0:
-                # Das aktuelle Intervall endet
+                # Das aktuelle Intervall endet. Wir fügen es aber noch nicht in
+                # die Ergebnisliste ein, da ein Anschlussintervall folgen
+                # könnte.
                 currstop = num
 
             count = newcount
@@ -330,7 +338,10 @@ class AipToc:
         # Intervalle ausnormalisieren
         pages = []
         for start, stop in ranges:
-            pages.extend(list(range(start, stop + 1)))
+            for num in range(start, stop + 1):
+                pages.append(self.index_num[num])
+
+        return pages
 
         # Ggf. Vor- und Rückseiten ergänzen
         pagepairs = []

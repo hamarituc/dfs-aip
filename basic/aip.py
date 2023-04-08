@@ -26,6 +26,24 @@ from aip.toc import AipToc
 
 
 
+def prepare_filter(filterarray):
+    prefixes = []
+
+    if filterarray is None:
+        return None
+
+    for f in filterarray:
+        fsplit = f.split('-')
+        if len(fsplit) == 1:
+            prefixes.append(( fsplit[0].strip(), fsplit[0].strip() ))
+        elif len(fsplit) == 2:
+            prefixes.append(( fsplit[0].strip(), fsplit[1].strip() ))
+        else:
+            raise ValueError("Ungültiger Filterausdruck '%s'" % f)
+
+    return prefixes
+
+
 def page_list_tree(entry, show, indent = []):
     line = ""
 
@@ -118,6 +136,26 @@ def page_list(args):
         show['pages']  = True
 
     page_list_tree(toc.toc, show)
+
+
+def page_filter(args):
+    prefixes = prepare_filter(args.filter)
+
+    cache = AipCache(basedir = args.cache)
+    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
+    aiptype, airac, filename = cache.get(args.type, airac)
+    toc = AipToc(filename)
+    pages = toc.filter(prefixes)
+
+    for p in pages:
+        if 'prefix' in p and 'title' in p:
+            print("%s:\t%s" % ( p['prefix'], p['title'] ))
+        elif 'prefix' in p:
+            print(p['prefix'])
+        elif 'title' in p:
+            print(p['title'])
+        else:
+            print(p['name'])
 
 
 def page_fetch(args):
@@ -279,9 +317,18 @@ command_page_list.add_argument(
     action = 'store_true',
     help = "Titel anzeigen")
 
-
-
 command_page_list.set_defaults(func = page_list)
+
+
+command_page_filter = commands_page.add_parser(
+    'filter',
+    description = "Seiten auswählen")
+
+parse_type(command_page_filter)
+parse_airac(command_page_filter)
+parse_filter(command_page_filter)
+
+command_page_filter.set_defaults(func = page_filter)
 
 
 command_page_fetch = commands_page.add_parser(
