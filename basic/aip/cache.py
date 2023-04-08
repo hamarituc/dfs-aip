@@ -116,9 +116,9 @@ class AipCache:
 
                 result.append(( toc['type'], datetime.date.fromisoformat(toc['airac']), path ))
 
-        sorted(result, key = lambda x : ( x[1], x[0] ))
+        result.sort(key = lambda x : ( x[1], x[0] ), reverse = True)
 
-        return reversed(result)
+        return result
 
 
     #
