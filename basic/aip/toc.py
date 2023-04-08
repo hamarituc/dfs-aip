@@ -53,12 +53,15 @@ class AipToc:
             if page is None:
                 return None
 
+            if subpage is not None:
+                subpage = subpage.upper()
+
             newentry['page'] = int(page)
             newentry['odd'] = bool(newentry['page'] % 2)
             componentpage = page
 
             if subpage is not None:
-                newentry['subpage'] = ord(subpage.upper()[0]) - ord('A')
+                newentry['subpage'] = ord(subpage[0]) - ord('A') + 1
                 if newentry['odd']:
                     raise ValueError("Seitenangabe '%s' ist ungültig. Einschubseiten können nur auf eine gerade Seite folgen." % component)
                 newentry['odd'] = bool(newentry['subpage'] % 2)
