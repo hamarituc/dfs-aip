@@ -421,6 +421,8 @@ class AipToc:
         if os.path.exists(filename) and not refresh:
             return filename
 
+        print(page['name'])
+
         with open(filename, 'wb') as f:
             f.write(mediacontent)
 
