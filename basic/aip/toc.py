@@ -396,11 +396,11 @@ class AipToc:
         return pagepairs
 
 
-    def fetchpage(self, page, refresh = False):
+    def fetchthumbnail(self, page, refresh = False):
         if 'folder' in page:
             return None
 
-        filename = os.path.join(self.datadir, page['pageid'] + '.png')
+        filename = os.path.join(self.datadir, page['pageid'] + '_thumb.png')
         if not refresh and os.path.exists(filename):
             return filename
 
