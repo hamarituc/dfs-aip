@@ -427,3 +427,69 @@ class AipToc:
             f.write(mediacontent)
 
         return filename
+
+
+    def fetchpage(self, page, refresh = False):
+        if 'folder' in page:
+            return None
+
+        basefilename = os.path.join(self.datadir, page['pageid'])
+        if not refresh:
+            if os.path.exists(basefilename + '.png'):
+                return basefilename + '.png'
+            if os.path.exists(basefilename + '.pdf'):
+                return basefilename + '.pdf'
+
+        print(page['name'])
+
+        chapter = page['path'][0]
+        if chapter == "HEL AD":
+            chapter = "AD"
+
+        url = urllib.parse.urlparse(page['href'])
+        url = url.path.split('/')
+        urlbase = url[1]
+        pageid = url[-1].removesuffix('.html')
+
+        url = 'https://aip.dfs.de/%s/print/%s/%s/%s' % \
+            (
+                urlbase,
+                chapter,
+                pageid,
+                urllib.parse.quote(page['name'])
+            )
+
+        # Seite abrufen
+        response = requests.get(url)
+        response.raise_for_status()
+
+        content_type = response.headers['content-type'].split(';')[0]
+        if content_type == 'application/pdf':
+            with open(basefilename + '.pdf', 'wb') as f:
+                f.write(response.content)
+            return basefilename + '.pdf'
+
+        if content_type != 'text/html':
+            raise ValueError("Unbekannter Medientyp '%s' für Seite '%s'" % ( response.headers['content-type'], page['name'] ))
+
+        # Seite parsen
+        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = soup.find('body')
+
+        if soup is not None:
+            soup = soup.find('div', class_ = 'pageAIP d-print-block')
+        if soup is not None:
+            soup = soup.find('img')
+        if soup is None:
+            raise ValueError("Inhalt von Seite '%s' nicht bestimmbar" % page['name'])
+
+        mediatype, mediacontent = soup['src'].split(',', maxsplit = 1)
+        if mediatype != 'data:image/png;base64':
+            raise ValueError("Unbekannter Medientyp '%s' auf Seite '%s'" % ( mediatype, page['name'] ))
+
+        mediacontent = base64.b64decode(mediacontent)
+
+        with open(basefilename + '.png', 'wb') as f:
+            f.write(mediacontent)
+
+        return basefilename + '.png'
