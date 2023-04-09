@@ -27,8 +27,7 @@ from aip.functions import page_list
 from aip.functions import page_filter
 from aip.functions import page_fetch
 from aip.functions import page_purge
-
-
+from aip.functions import pdf_summary
 
 
 
@@ -223,6 +222,34 @@ command_page_purge = commands_page.add_parser(
     description = "Überflüssige Seiten löschen")
 
 command_page_purge.set_defaults(func = page_purge)
+
+
+command_pdf = commands.add_parser(
+    'pdf',
+    description = "Zusammenfassung als PDF exportieren")
+
+command_pdf.add_argument(
+    '--output',
+    metavar = 'FILE',
+    type = str,
+    required = True,
+    help = 'Ausgabedatei')
+
+commands_pdf = command_pdf.add_subparsers(required = True)
+
+
+command_pdf_summary = commands_pdf.add_parser(
+    'summary',
+    description = "Einfache Zusammenfassung erstellen")
+
+parse_type(command_pdf_summary)
+parse_refresh(command_pdf_summary)
+parse_airac(command_pdf_summary)
+parse_filter(command_pdf_summary)
+parse_pairs(command_pdf_summary, "Vorder- und Rückseiten für Duplex-Druck ausgeben")
+
+command_pdf_summary.set_defaults(func = pdf_summary)
+
 
 
 args = parser.parse_args()
