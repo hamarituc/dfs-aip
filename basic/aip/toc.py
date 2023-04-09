@@ -18,8 +18,10 @@
 
 import base64
 from bs4 import BeautifulSoup
+from io import BytesIO
 import json
 import os
+from PIL import Image
 import re
 import requests
 import urllib.parse
@@ -433,12 +435,9 @@ class AipToc:
         if 'folder' in page:
             return None
 
-        basefilename = os.path.join(self.datadir, page['pageid'])
-        if not refresh:
-            if os.path.exists(basefilename + '.png'):
-                return basefilename + '.png'
-            if os.path.exists(basefilename + '.pdf'):
-                return basefilename + '.pdf'
+        filename = os.path.join(self.datadir, page['pageid'] + '.pdf')
+        if not refresh and os.path.exists(filename):
+            return filename
 
         print(page['name'])
 
@@ -465,9 +464,9 @@ class AipToc:
 
         content_type = response.headers['content-type'].split(';')[0]
         if content_type == 'application/pdf':
-            with open(basefilename + '.pdf', 'wb') as f:
+            with open(filename, 'wb') as f:
                 f.write(response.content)
-            return basefilename + '.pdf'
+            return filename
 
         if content_type != 'text/html':
             raise ValueError("Unbekannter Medientyp '%s' für Seite '%s'" % ( response.headers['content-type'], page['name'] ))
@@ -488,8 +487,8 @@ class AipToc:
             raise ValueError("Unbekannter Medientyp '%s' auf Seite '%s'" % ( mediatype, page['name'] ))
 
         mediacontent = base64.b64decode(mediacontent)
+        mediastream = BytesIO(mediacontent)
+        img = Image.open(mediastream)
+        img.save(filename, resolution = 300, optimize = True)
 
-        with open(basefilename + '.png', 'wb') as f:
-            f.write(mediacontent)
-
-        return basefilename + '.png'
+        return filename
