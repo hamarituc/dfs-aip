@@ -41,6 +41,18 @@ def prepare_filter(filterarray):
     return prefixes
 
 
+def prepare_pagepairs(args, pairs):
+    prefixes = prepare_filter(args.filter)
+
+    cache = AipCache(basedir = args.cache)
+    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
+    aiptype, airac, filename = cache.get(args.type, airac)
+    toc = AipToc(filename)
+    pages = toc.filter(prefixes)
+    pagepairs = toc.pairs(pages, pairs = pairs)
+
+    return toc, pagepairs
+
 
 def page_list_tree(entry, show, indent = []):
     line = ""
@@ -82,6 +94,26 @@ def page_list_tree(entry, show, indent = []):
         for idx, e in enumerate(entry['folder']):
             page_list_tree(e, show, indent = indent + [ idx + 1 >= len(entry['folder']) ])
 
+
+def page_show_filter(args, page, odd):
+    line = ""
+
+    if args.pairs:
+        line += "V  " if odd else "H  "
+
+    if page is None:
+        line += "---"
+    elif 'prefix' in page and 'title' in page:
+        line += "%s:\t%s" % ( page['prefix'], page['title'] )
+    elif 'prefix' in page:
+        line += page['prefix']
+    elif 'title' in page:
+        line += page['title']
+    else:
+        line += page['name']
+
+    if page is not None or args.pairs:
+        print(line)
 
 
 def toc_fetch(args):
@@ -137,57 +169,17 @@ def page_list(args):
 
 
 def page_filter(args):
-    prefixes = prepare_filter(args.filter)
+    toc, pagepairs = prepare_pagepairs(args, args.pairs)
 
-    cache = AipCache(basedir = args.cache)
-    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
-    aiptype, airac, filename = cache.get(args.type, airac)
-    toc = AipToc(filename)
-    pages = toc.filter(prefixes)
-
-    if args.pairs:
-        page_pairs(toc.pairs(pages, pairs = True))
-        return
-
-    for p in pages:
-        if 'prefix' in p and 'title' in p:
-            print("%s:\t%s" % ( p['prefix'], p['title'] ))
-        elif 'prefix' in p:
-            print(p['prefix'])
-        elif 'title' in p:
-            print(p['title'])
-        else:
-            print(p['name'])
-
-
-def page_pairs(pagepairs):
-    for podd, peven in pagepairs:
-        if podd is None:
-            print("V  ---")
-        elif 'prefix' in podd:
-            print("V  %s" % podd['prefix'])
-        else:
-            print("V  %s" % podd['name'])
-
-        if peven is None:
-            print("R  ---")
-        elif 'prefix' in peven:
-            print("R  %s" % peven['prefix'])
-        else:
-            print("R  %s" % peven['name'])
+    for pageodd, pageeven in pagepairs:
+        page_show_filter(args, pageodd,  True)
+        page_show_filter(args, pageeven, False)
 
 
 def page_fetch(args):
-    prefixes = prepare_filter(args.filter)
+    toc, pagepairs = prepare_pagepairs(args, args.pairs)
 
-    cache = AipCache(basedir = args.cache)
-    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
-    aiptype, airac, filename = cache.get(args.type, airac)
-    toc = AipToc(filename)
-    pages = toc.filter(prefixes)
-    pages = toc.pairs(pages)
-
-    for pageodd, pageeven in pages:
+    for pageodd, pageeven in pagepairs:
         if pageodd is not None:
             toc.fetchpage(pageodd, refresh = args.refresh)
         if pageeven is not None:
