@@ -178,7 +178,7 @@ class AipCache:
         result = {}
 
         # URL
-        result['href'] = url
+        result['href'] = response.url
 
         # Permalink
         permalink = self._PERMAPATTERN.search(response.content.decode())
