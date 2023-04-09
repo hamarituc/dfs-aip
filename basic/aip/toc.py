@@ -398,7 +398,13 @@ class AipToc:
 
     def fetchpage(self, page, refresh = False):
         if 'folder' in page:
-            return
+            return None
+
+        filename = os.path.join(self.datadir, page['pageid'] + '.png')
+        if not refresh and os.path.exists(filename):
+            return filename
+
+        print(page['name'])
 
         # Seite abrufen
         response = requests.get(page['href'])
@@ -416,12 +422,6 @@ class AipToc:
             raise ValueError("Unbekannter Medientyp '%s' auf Seite '%s'" % ( mediatype, page['name'] ))
 
         mediacontent = base64.b64decode(mediacontent)
-
-        filename = os.path.join(self.datadir, page['pageid'] + '.png')
-        if os.path.exists(filename) and not refresh:
-            return filename
-
-        print(page['name'])
 
         with open(filename, 'wb') as f:
             f.write(mediacontent)
