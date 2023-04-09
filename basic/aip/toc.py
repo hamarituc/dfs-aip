@@ -16,15 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-#from bs4 import BeautifulSoup
-#import copy
-#import datetime
+import base64
+from bs4 import BeautifulSoup
 import json
-#import os
+import os
 import re
-#import requests
-#import urllib.parse
-#import xdg.BaseDirectory
+import requests
+import urllib.parse
 
 
 
@@ -32,6 +30,13 @@ class AipToc:
     def __init__(self, filename: str):
         with open(filename) as f:
             self.toc_raw = json.load(f)
+
+        self.basedir = os.path.dirname(os.path.abspath(filename))
+        self.datadir = os.path.join(self.basedir, 'data')
+        try:
+            os.mkdir(self.datadir)
+        except FileExistsError:
+            pass
 
         self.toc = self._parse(self.toc_raw)
 
@@ -42,6 +47,9 @@ class AipToc:
 
     def _parse(self, entry, path = None):
         newentry = { k: v for k, v in entry.items() if not isinstance(v, list) }
+
+        url = urllib.parse.urlparse(newentry['href'])
+        newentry['pageid'] = url.path.split('/')[-1].removesuffix('.html').lower()
 
         if 'folder' in entry:
             newentry['folder'] = []
@@ -388,5 +396,32 @@ class AipToc:
         return pagepairs
 
 
-    def fetchpage(self):
-        pass
+    def fetchpage(self, page, refresh = False):
+        if 'folder' in page:
+            return
+
+        # Seite abrufen
+        response = requests.get(page['href'])
+        response.raise_for_status()
+
+        # Seite parsen
+        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = soup.find('main', class_ = 'container')
+        soup = soup.find('img', class_ = 'pageImage')
+        if soup is None:
+            raise ValueError("Inhalt von Seite '%s' nicht bestimmbar" % page['name'])
+
+        mediatype, mediacontent = soup['src'].split(',', maxsplit = 1)
+        if mediatype != 'data:image/png;base64':
+            raise ValueError("Unbekannter Medientyp '%s' auf Seite '%s'" % ( mediatype, page['name'] ))
+
+        mediacontent = base64.b64decode(mediacontent)
+
+        filename = os.path.join(self.datadir, page['pageid'] + '.png')
+        if os.path.exists(filename) and not refresh:
+            return filename
+
+        with open(filename, 'wb') as f:
+            f.write(mediacontent)
+
+        return filename

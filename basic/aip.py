@@ -180,7 +180,20 @@ def page_pairs(pagepairs):
 
 
 def page_fetch(args):
-    pass
+    prefixes = prepare_filter(args.filter)
+
+    cache = AipCache(basedir = args.cache)
+    airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
+    aiptype, airac, filename = cache.get(args.type, airac)
+    toc = AipToc(filename)
+    pages = toc.filter(prefixes)
+    pages = toc.pairs(pages)
+
+    for pageodd, pageeven in pages:
+        if pageodd is not None:
+            toc.fetchpage(pageodd, refresh = args.refresh)
+        if pageeven is not None:
+            toc.fetchpage(pageeven, refresh = args.refresh)
 
 
 def page_purge(args):
