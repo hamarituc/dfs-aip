@@ -257,6 +257,14 @@ def parse_filter(parser):
         help = "Filter")
 
 
+def parse_pairs(parser, help):
+    parser.add_argument(
+        '--pairs',
+        action = 'store_true',
+        help = help)
+
+
+
 parser = argparse.ArgumentParser(
         description = "Zugriff auf das Luftfahrthandbuch AIP"
     )
@@ -361,11 +369,7 @@ command_page_filter = commands_page.add_parser(
 parse_type(command_page_filter)
 parse_airac(command_page_filter)
 parse_filter(command_page_filter)
-
-command_page_filter.add_argument(
-    '--pairs',
-    action = 'store_true',
-    help = "Vorder- und Rückseiten anzeigen")
+parse_pairs(command_page_filter, "Vorder- und Rückseiten anzeigen")
 
 command_page_filter.set_defaults(func = page_filter)
 
@@ -378,6 +382,7 @@ parse_type(command_page_fetch)
 parse_refresh(command_page_fetch)
 parse_airac(command_page_fetch)
 parse_filter(command_page_fetch)
+parse_pairs(command_page_fetch, "Zugehörige Vorder- bzw. Rückseiten herunterladen")
 
 command_page_fetch.set_defaults(func = page_fetch)
 
