@@ -459,7 +459,7 @@ class AipToc:
             )
 
         # Seite abrufen
-        response = requests.get(url)
+        response = requests.get(url, headers = { 'referer': page['href'] })
         response.raise_for_status()
 
         content_type = response.headers['content-type'].split(';')[0]
