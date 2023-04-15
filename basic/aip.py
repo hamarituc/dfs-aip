@@ -178,7 +178,7 @@ command_page_fetch.set_defaults(func = page_fetch)
 
 command_page_tree = commands_page.add_parser(
     'tree',
-    description = "Seiten anzeigen")
+    description = "Seitenbaum anzeigen")
 
 parse_type(command_page_tree)
 parse_airac(command_page_tree)
@@ -208,7 +208,7 @@ command_page_tree.set_defaults(func = page_tree)
 
 command_page_list = commands_page.add_parser(
     'list',
-    description = "Seiten auswählen")
+    description = "Seiten anzeigen")
 
 parse_type(command_page_list)
 parse_baseairac(command_page_list)
