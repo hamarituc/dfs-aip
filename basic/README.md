@@ -50,7 +50,16 @@ zum Zugriff per Web-Browser nicht zu einem erneuten Download.
 Vorbereitung
 ------------
 
-**TODO**
+Das Skript benötigt einige Python-Pakete, die in `requirements.txt` aufgeführt
+sind. Die Bibliotheken können entweder über die Paketverwaltung des
+Betriebssystems oder per `pip` in einem separaten `virtualenv` installiert
+werden.
+
+```
+$ python -m venv /pfad/zum/venv/aip
+$ source /pfad/zum/venv/bin/aip/activate
+(aip) $ pip install -r requirements.txt
+```
 
 
 Funktionsweise
