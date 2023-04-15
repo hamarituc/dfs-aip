@@ -198,6 +198,34 @@ def page_fetch(args):
             toc.fetchpage(pageeven, refresh = args.refresh)
 
 
+def page_diff(args):
+    prefixes = prepare_filter(args.filter)
+
+    cache = AipCache(basedir = args.cache)
+
+    target_airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
+    _, target_airac, target_filename = cache.get(args.type, target_airac)
+    target_toc = AipToc(target_filename)
+    target_pages = target_toc.filter(prefixes)
+
+    base_airac = datetime.date.fromisoformat(args.base_airac)
+    _, base_airac, base_filename = cache.get(args.type, base_airac)
+    base_toc = AipToc(base_filename)
+    base_pages = base_toc.filter(prefixes)
+
+    pagesdiff = page_amdt(base_pages, target_pages)
+
+    for pbase, ptarget in pagesdiff:
+        if pbase is None:
+            line = "++ hinzugefügt  %s" % ptarget['prefix']
+        elif ptarget is None:
+            line = "-- gelöscht     %s" % pbase['prefix']
+        else:
+            line = "** geändert     %s" % ptarget['prefix']
+
+        print(line)
+
+
 def page_purge(args):
     pass
 

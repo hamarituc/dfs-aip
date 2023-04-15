@@ -26,6 +26,7 @@ from aip.functions import toc_delete
 from aip.functions import page_list
 from aip.functions import page_filter
 from aip.functions import page_fetch
+from aip.functions import page_diff
 from aip.functions import page_purge
 from aip.functions import pdf_summary
 
@@ -226,6 +227,18 @@ parse_filter(command_page_fetch)
 parse_pairs(command_page_fetch, "Zugehörige Vorder- bzw. Rückseiten herunterladen")
 
 command_page_fetch.set_defaults(func = page_fetch)
+
+
+command_page_diff = commands_page.add_parser(
+    'diff',
+    description = "Geänderte Seiten anzeigen")
+
+parse_type(command_page_diff)
+parse_baseairac(command_page_diff, required = True)
+parse_airac(command_page_diff)
+parse_filter(command_page_diff)
+
+command_page_diff.set_defaults(func = page_diff)
 
 
 command_page_purge = commands_page.add_parser(
