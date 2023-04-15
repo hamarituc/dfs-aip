@@ -282,7 +282,7 @@ class AipToc:
 
     def filter(self, prefixes):
         if prefixes is None:
-            return self.index_num.values()
+            return list(self.index_num.values())
 
         marker = []
 
