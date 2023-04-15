@@ -66,7 +66,10 @@ def prepare_pagepairs(args, pairs):
     return toc, pagepairs
 
 
-def page_list_tree(entry, show, indent = []):
+def page_tree_show(entry, show, indent = []):
+    if not ('folder' in entry or show['pages']):
+        return
+
     line = ""
 
     if show['num']:
@@ -75,14 +78,13 @@ def page_list_tree(entry, show, indent = []):
         else:
             line += "    %4d    " % ( entry['num'] )
 
-    if show['folder'] and show['tree']:
-        for idx, last in enumerate(indent):
-            if idx + 1 >= len(indent):
-                line += "+- "
-            elif last:
-                line += "   "
-            else:
-                line += "|  "
+    for idx, last in enumerate(indent):
+        if idx + 1 >= len(indent):
+            line += "+- "
+        elif last:
+            line += "   "
+        else:
+            line += "|  "
 
     if show['prefix']:
         if 'prefix' in entry:
@@ -98,13 +100,11 @@ def page_list_tree(entry, show, indent = []):
        'title' not in entry:
         line += entry['name']
 
-    if show['folder'] and 'folder' in entry or \
-       show['pages'] and 'folder' not in entry:
-        print(line)
+    print(line)
 
     if 'folder' in entry:
         for idx, e in enumerate(entry['folder']):
-            page_list_tree(e, show, indent = indent + [ idx + 1 >= len(entry['folder']) ])
+            page_tree_show(e, show, indent = indent + [ idx + 1 >= len(entry['folder']) ])
 
 
 def page_show_filter(args, page, odd):
@@ -152,7 +152,7 @@ def toc_delete(args):
     pass
 
 
-def page_list(args):
+def page_tree(args):
     cache = AipCache(basedir = args.cache)
     airac = None if args.airac is None else datetime.date.fromisoformat(args.airac)
     aiptype, airac, filename = cache.get(args.type, airac)
@@ -161,23 +161,16 @@ def page_list(args):
     show = \
     {
         'num':    args.num,
-        'tree':   args.tree,
         'prefix': args.prefix,
         'title':  args.title,
-        'folder': args.folder,
-        'pages':  args.pages,
+        'pages':  not args.only_folder,
     }
 
     if not (show['prefix'] or show['title']):
-        show['tree']   = True
         show['prefix'] = True
         show['title']  = True
 
-    if not (show['folder'] or show['pages']):
-        show['folder'] = True
-        show['pages']  = True
-
-    page_list_tree(toc.toc, show)
+    page_tree_show(toc.toc, show)
 
 
 def page_filter(args):
