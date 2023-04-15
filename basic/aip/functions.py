@@ -111,7 +111,7 @@ def page_list_show(args, page, odd):
     line = ""
 
     if args.pairs:
-        line += "V  " if odd else "H  "
+        line += "V  " if odd else "R  "
 
     if page is None:
         line += "---"
