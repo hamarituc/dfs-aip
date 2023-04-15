@@ -107,7 +107,7 @@ def page_tree_show(entry, show, indent = []):
             page_tree_show(e, show, indent = indent + [ idx + 1 >= len(entry['folder']) ])
 
 
-def page_show_filter(args, page, odd):
+def page_list_show(args, page, odd):
     line = ""
 
     if args.pairs:
@@ -173,12 +173,12 @@ def page_tree(args):
     page_tree_show(toc.toc, show)
 
 
-def page_filter(args):
+def page_list(args):
     toc, pagepairs = prepare_pagepairs(args, args.pairs)
 
     for pageodd, pageeven in pagepairs:
-        page_show_filter(args, pageodd,  True)
-        page_show_filter(args, pageeven, False)
+        page_list_show(args, pageodd,  True)
+        page_list_show(args, pageeven, False)
 
 
 def page_fetch(args):

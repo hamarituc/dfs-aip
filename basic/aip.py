@@ -24,7 +24,7 @@ from aip.functions import toc_fetch
 from aip.functions import toc_list
 from aip.functions import toc_delete
 from aip.functions import page_tree
-from aip.functions import page_filter
+from aip.functions import page_list
 from aip.functions import page_fetch
 from aip.functions import page_diff
 from aip.functions import page_purge
@@ -162,6 +162,20 @@ command_page = commands.add_parser(
 commands_page = command_page.add_subparsers(required = True)
 
 
+command_page_fetch = commands_page.add_parser(
+    'fetch',
+    description = "Seiten herunterladen")
+
+parse_type(command_page_fetch)
+parse_refresh(command_page_fetch)
+parse_baseairac(command_page_fetch)
+parse_airac(command_page_fetch)
+parse_filter(command_page_fetch)
+parse_pairs(command_page_fetch, "Zugehörige Vorder- bzw. Rückseiten herunterladen")
+
+command_page_fetch.set_defaults(func = page_fetch)
+
+
 command_page_tree = commands_page.add_parser(
     'tree',
     description = "Seiten anzeigen")
@@ -192,31 +206,17 @@ command_page_tree.add_argument(
 command_page_tree.set_defaults(func = page_tree)
 
 
-command_page_filter = commands_page.add_parser(
-    'filter',
+command_page_list = commands_page.add_parser(
+    'list',
     description = "Seiten auswählen")
 
-parse_type(command_page_filter)
-parse_baseairac(command_page_filter)
-parse_airac(command_page_filter)
-parse_filter(command_page_filter)
-parse_pairs(command_page_filter, "Vorder- und Rückseiten anzeigen")
+parse_type(command_page_list)
+parse_baseairac(command_page_list)
+parse_airac(command_page_list)
+parse_filter(command_page_list)
+parse_pairs(command_page_list, "Vorder- und Rückseiten anzeigen")
 
-command_page_filter.set_defaults(func = page_filter)
-
-
-command_page_fetch = commands_page.add_parser(
-    'fetch',
-    description = "Seiten herunterladen")
-
-parse_type(command_page_fetch)
-parse_refresh(command_page_fetch)
-parse_baseairac(command_page_fetch)
-parse_airac(command_page_fetch)
-parse_filter(command_page_fetch)
-parse_pairs(command_page_fetch, "Zugehörige Vorder- bzw. Rückseiten herunterladen")
-
-command_page_fetch.set_defaults(func = page_fetch)
+command_page_list.set_defaults(func = page_list)
 
 
 command_page_diff = commands_page.add_parser(
