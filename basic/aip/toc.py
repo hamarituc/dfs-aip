@@ -56,6 +56,7 @@ class AipToc:
         if 'folder' in entry:
             newentry['folder'] = []
             component, title = self._parse_folder(entry, path)
+            componentpage = None
         else:
             component, page, subpage, title = self._parse_page(entry, path)
 
@@ -77,20 +78,19 @@ class AipToc:
                 newentry['odd'] = bool(newentry['subpage'] % 2)
                 componentpage += subpage
 
+        if component is not None and not isinstance(component, tuple):
+            component = ( component, )
+
+        if componentpage is not None:
             if component is None:
-                component = componentpage
-            else:
-                component = ( component, componentpage )
+                component = tuple()
+            component += ( componentpage, )
 
         if path is None:
             path = tuple()
 
         elif component is not None:
-            if isinstance(component, tuple):
-                path += component
-            else:
-                path += ( component, )
-
+            path += component
             newentry['path'] = path
             newentry['prefix'] = " ".join(path)
 
@@ -235,7 +235,12 @@ class AipToc:
             # Verzeichnis der Helikopterplätze
             match = re.fullmatch(r'HEL AD 3-([A-Z])+-([0-9]+)([A-Za-z])?', entry['name'])
             if match:
-                return None, match[2], match[3], match[1]
+                # Seite aus dem Flugplatzverzeichnis (HEL AD 3) ignorieren, die
+                # unterhalb der Platzkarten einsortiert sind.
+                if path[1] != "3":
+                    return None, None, None, None
+
+                return match[1], match[2], match[3], match[1]
 
             # Anflugblätter
             match = re.fullmatch(r'(.+) ([0-9]+)([A-Za-z])?', entry['name'])
