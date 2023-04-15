@@ -21,6 +21,7 @@ import pikepdf
 
 from .cache import AipCache
 from .toc import AipToc
+from .page import page_amdt
 
 
 
@@ -50,6 +51,16 @@ def prepare_pagepairs(args, pairs):
     aiptype, airac, filename = cache.get(args.type, airac)
     toc = AipToc(filename)
     pages = toc.filter(prefixes)
+
+    if args.base_airac is not None:
+        base_airac = datetime.date.fromisoformat(args.base_airac)
+        _, base_airac, base_filename = cache.get(args.type, base_airac)
+        base_toc = AipToc(base_filename)
+        base_pages = base_toc.filter(prefixes)
+
+        pagesdiff = page_amdt(base_pages, pages)
+        pages = [ ptarget for pbase, ptarget in pagesdiff if ptarget is not None ]
+
     pagepairs = toc.pairs(pages, pairs = pairs)
 
     return toc, pagepairs

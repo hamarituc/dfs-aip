@@ -70,6 +70,15 @@ def parse_refresh(parser):
         help = "Aktualisierung des Caches erzwingen")
 
 
+def parse_baseairac(parser, required = False):
+    parser.add_argument(
+        '-b', '--base-airac',
+        required = required,
+        type = str,
+        metavar = "YYYY-MM-DD",
+        help = "AIRAC-Bezugsdatum für Änderungsdokumente")
+
+
 def parse_airac(parser):
     parser.add_argument(
         '-a', '--airac',
@@ -197,6 +206,7 @@ command_page_filter = commands_page.add_parser(
     description = "Seiten auswählen")
 
 parse_type(command_page_filter)
+parse_baseairac(command_page_filter)
 parse_airac(command_page_filter)
 parse_filter(command_page_filter)
 parse_pairs(command_page_filter, "Vorder- und Rückseiten anzeigen")
@@ -210,6 +220,7 @@ command_page_fetch = commands_page.add_parser(
 
 parse_type(command_page_fetch)
 parse_refresh(command_page_fetch)
+parse_baseairac(command_page_fetch)
 parse_airac(command_page_fetch)
 parse_filter(command_page_fetch)
 parse_pairs(command_page_fetch, "Zugehörige Vorder- bzw. Rückseiten herunterladen")
@@ -244,6 +255,7 @@ command_pdf_summary = commands_pdf.add_parser(
 
 parse_type(command_pdf_summary)
 parse_refresh(command_pdf_summary)
+parse_baseairac(command_pdf_summary)
 parse_airac(command_pdf_summary)
 parse_filter(command_pdf_summary)
 parse_pairs(command_pdf_summary, "Vorder- und Rückseiten für Duplex-Druck ausgeben")
