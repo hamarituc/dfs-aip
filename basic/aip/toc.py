@@ -122,6 +122,14 @@ class AipToc:
             if match:
                 return match[2], match[4]
 
+        # Unterabschnittsnummer in AIP IFR erkennen
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 2 and \
+           path[0] in [ "GEN", "ENR", "AD" ]:
+            match = re.fullmatch(r'(GEN|ENR|AD) [0-9]\.([0-9]+)( (.+))?', entry['name'])
+            if match:
+                return match[2], match[4]
+
         # Den Verweis von der AIP-VFR auf die Streckenkarte in der AIP-IFR hart kodieren
         if self.toc_raw['type'] == 'VFR' and \
            path == ( "ENR", ) and \
@@ -139,7 +147,8 @@ class AipToc:
             raise ValueError("Unerwartete Streckenkarte '%s'" % entry['name'])
 
         # Anflugblätter behandeln
-        if self.toc_raw['type'] == 'VFR' and path in [ ( "AD", ), ( "HEL AD", ) ]:
+        if self.toc_raw['type'] == 'VFR' and \
+           path in [ ( "AD", ), ( "HEL AD", ) ]:
             # Alphabetisches Register in der Navigation überspringen
             match = re.fullmatch(r'[A-Z](-[A-Z])?', entry['name'])
             if match:
@@ -153,14 +162,35 @@ class AipToc:
             # Flugplätze ohne ICAO-Locator
             return entry['name'], entry['name']
 
+        # Militärische Plätzer in der AIP IFR behandeln
+        if self.toc_raw['type'] == 'IFR' and \
+           path == ( "AD", ):
+            match = re.fullmatch(r'MIL-AD ([0-9])( (.+))?', entry['name'])
+            if match:
+                return ( 'MIL', match[1] ), match[3]
+
+        # Überflüssigen Ordner "MIL-AD" eliminieren
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 3 and path[0] == "AD" and path[1] == "MIL":
+            if path[2] == "1" and entry['name'] == "MIL-AD":
+                return None, None
+
+        # Anflugblätter behandeln
+        if self.toc_raw['type'] == 'IFR' and \
+           path in [ ( "AD", "2" ), ( "AD", "3" ), ( "AD", "MIL", "2" ) ]:
+            # Der ICAO-Locator ist nicht im Titel kodiert. Wir müssen eine
+            # Ebene absteigen.
+            return entry['folder'][0]['name'].split()[2], entry['name']
+
         # Rundschreiben (AIC)
-        if self.toc_raw['type'] == 'VFR' and path == ( "AIC", ):
+        if path == ( "AIC", ):
             # Jahresregister in der Navigation überspringen
             match = re.fullmatch(r'20[0-9][0-9]', entry['name'])
             if match:
                 return None, None
 
-            if entry['name'] == "AIC Prüfliste":
+            if self.toc_raw['type'] == 'VFR' and \
+               entry['name'] == "AIC Prüfliste":
                 return "Liste", "Prüfliste"
 
             match = re.fullmatch(r'AIC ([0-9][0-9]/[0-9][0-9]) (.+)', entry['name'])
@@ -168,13 +198,14 @@ class AipToc:
                 return match[1], match[2]
 
         # Ergänzungen (SUP)
-        if self.toc_raw['type'] == 'VFR' and path == ( "SUP", ):
+        if path == ( "SUP", ):
             # Jahresregister in der Navigation überspringen
             match = re.fullmatch(r'20[0-9][0-9]', entry['name'])
             if match:
                 return None, None
 
-            if entry['name'] == "SUP Liste der Ergänzungen":
+            if self.toc_raw['type'] == 'VFR' and \
+               entry['name'] == "SUP Liste der Ergänzungen":
                 return "Liste", "Liste der Ergänzungen"
 
             match = re.fullmatch(r'SUP ([0-9][0-9]/[0-9][0-9]) (.+)', entry['name'])
@@ -185,8 +216,9 @@ class AipToc:
 
 
     def _parse_page(self, entry, path):
-        # Seitennummer der Textseiten bestimmen
-        if len(path) == 2 and path[0] in [ "GEN", "ENR", "AD", "HEL AD" ]:
+        # Seitennummer der Textseiten in der AIP VFR bestimmen
+        if self.toc_raw['type'] == 'VFR' and \
+           len(path) == 2 and path[0] in [ "GEN", "ENR", "AD", "HEL AD" ]:
             match = re.fullmatch(r'(GEN|ENR|AD|HEL AD) ([0-9])-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
 
             if match:
@@ -197,12 +229,35 @@ class AipToc:
 
                 return None, match[3], match[4], match[6]
 
+        # Seitennummer der Textseiten in der AIP IFR bestimmen
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 3 and path[0] in [ "GEN", "ENR", "AD" ]:
+            match = re.fullmatch(r'(GEN|ENR|AD) [0-9][\. ][0-9]+[- ]([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+
+            if match:
+                return None, match[2], match[3], match[5]
+
+        # Seitnnummern der Textseiten im Abschnitt MIL-AD der AIP-IFR bestimmen
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 3 and path[0] == "AD" and path[1] == "MIL":
+            match = re.fullmatch(r'MIL-AD [0-9]-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            if match:
+                return None, match[1], match[2], match[4]
+
+        # Streckenverzeichnisse behandeln
+        if self.toc_raw['type'] == 'IFR' and \
+           path == ( "ENR", "3", "2" ):
+            match = re.fullmatch(r'ENR 3\.2-([A-Z]+)-([0-9]+)([A-Za-z])?', entry['name'])
+            if match:
+                return match[1], match[2], match[3], match[1]
+
         # Streckenkarten haben keine Seitennummern
         if len(path) == 3 and path[0] == "ENR" and path[1] == "6":
             return None, "1", None, entry['name']
 
         # Flugplatzkarten behandeln
-        if len(path) == 2 and path[0] == "AD":
+        if self.toc_raw['type'] == 'VFR' and \
+           len(path) == 2 and path[0] == "AD":
             # Terminal Chart mit Seitennummer
             match = re.fullmatch(r'E[DT][A-Z][A-Z] (.+) Terminal Chart ([0-9]+)', entry['name'])
             if match:
@@ -228,10 +283,31 @@ class AipToc:
             if match:
                 return None, match[3], match[4], match[2]
 
+        # Flugplatzkarten behandeln
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 3 and path[0] == "AD" and path[1] in [ "2", "3" ]:
+            # einfache Nummierung: 1-1, 1-2, ..., 2-1, ...
+            match = re.fullmatch(r'AD [23] E[DT][A-Z][A-Z] ([126])-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            if match:
+                return match[1], match[2], match[3], match[5]
+
+            # geschachtelte Nummerierung: 1-1-1, 1-1-2, ..., 1-2-1, ..., 2-1-1, ...
+            match = re.fullmatch(r'AD [23] E[DT][A-Z][A-Z] ([345])-([0-9]+)-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            if match:
+                return ( match[1], match[2] ), match[3], match[4], match[6]
+
+        # Flugplatzkarten für Abschnitt "MIL-AD" behandeln
+        if self.toc_raw['type'] == 'IFR' and \
+           len(path) == 4 and path[0] == "AD" and path[1] == "MIL" and path[2] == "2":
+            match = re.fullmatch(r'AD 2 E[DT][A-Z][A-Z] ([0-9])-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            if match:
+                return match[1], match[2], match[3], match[5]
+
         # Helikopterplätze behandeln
-        if len(path) == 2 and path[0] == "HEL AD":
+        if self.toc_raw['type'] == 'VFR' and \
+           len(path) == 2 and path[0] == "HEL AD":
             # Verzeichnis der Helikopterplätze
-            match = re.fullmatch(r'HEL AD 3-([A-Z])+-([0-9]+)([A-Za-z])?', entry['name'])
+            match = re.fullmatch(r'HEL AD 3-([A-Z]+)-([0-9]+)([A-Za-z])?', entry['name'])
             if match:
                 # Seite aus dem Flugplatzverzeichnis (HEL AD 3) ignorieren, die
                 # unterhalb der Platzkarten einsortiert sind.
@@ -246,16 +322,16 @@ class AipToc:
                 return None, match[2], match[3], match[1]
 
         # Rundschreiben (AIC)
-        if self.toc_raw['type'] == 'VFR' and len(path) == 2 and path[0] == "AIC":
-            match = re.fullmatch(r'AIC VFR .+(-| Seite | Page-)([0-9]+)', entry['name'])
-            if match:
-                return None, match[2], None, None
-
-        # Ergänzungen (SUP)
-        if self.toc_raw['type'] == 'VFR' and len(path) == 2 and path[0] == "SUP":
-            match = re.fullmatch(r'(LIST OF )?SUP VFR .+(-| Seite | Page-)([0-9]+)( .+)?', entry['name'])
+        if len(path) == 2 and path[0] == "AIC":
+            match = re.fullmatch(r'AIC( VFR| IFR)? .+(-|- | Seite | Page-)([0-9]+)', entry['name'])
             if match:
                 return None, match[3], None, None
+
+        # Ergänzungen (SUP)
+        if len(path) == 2 and path[0] == "SUP":
+            match = re.fullmatch(r'(LIST OF )?SUP( VFR)? .+(-| Seite | Page-)([0-9]+)( .+)?', entry['name'])
+            if match:
+                return None, match[4], None, None
 
         raise ValueError("Unerwartete Seite '%s' in Abschnitt '%s'" % ( entry['name'], " ".join(path) ))
 
