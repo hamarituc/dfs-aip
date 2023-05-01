@@ -77,7 +77,7 @@ PAGES_TC  = []
 
 pdfs = load_pages(args.pdfs)
 
-for filename, pages in pdfs:
+for filename, pages, _ in pdfs:
     lastlist = None
     blankpages = 0
     termchart = True

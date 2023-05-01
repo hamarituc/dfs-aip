@@ -36,7 +36,13 @@ def load_pages(pdfs):
         pdf = pikepdf.Pdf.open(pdfname)
 
         if len(pdfs) == 0 or pdfs[0].endswith(".pdf"):
-            result.append(( pdfname, list(pdf.pages) ))
+            # Wir müssen das PDF-Objekt zurückgeben, auch wenn wir es nicht
+            # benötigen. Andernfalls würde die letzte Referenz darauf bei
+            # Rückkehr aus der Funktion aufgegeben. Der Garbace Collector darf
+            # das Objekt löschen und der Zugriff auf Objekte in
+            # `list(pdf.pages)` schlagen aufgrund der Implementierung von
+            # pikepdf fehl.
+            result.append(( pdfname, list(pdf.pages), pdf ))
             continue
 
         resultpages = []
@@ -142,7 +148,7 @@ def load_pages(pdfs):
             for p in pdf.pages[pfrom - 1 : pto]:
                 resultpages.append(p)
 
-        result.append(( pdfname, resultpages ))
+        result.append(( pdfname, resultpages, pdf ))
 
     return result
 

@@ -57,7 +57,7 @@ args = parser.parse_args()
 outpdf = pikepdf.Pdf.new()
 
 pdfs = load_pages(args.pdfs)
-for pdfname, ps in pdfs:
+for pdfname, ps, _ in pdfs:
     lastpage = None
     blankpages = 0
 
