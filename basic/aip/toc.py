@@ -28,6 +28,19 @@ import urllib.parse
 
 
 
+# Die `removesuffix`-Methode gibt es es ab Python 3.9. So lange Python 3.8 noch
+# nicht end of life ist, unterstützen wir diesen Quirk.
+def removesuffix(s, suffix):
+    if hasattr(s, 'removesuffix'):
+        return s.removesuffix(suffix)
+
+    if s.endswith(suffix):
+        return s[:-len(suffix)]
+
+    return s
+
+
+
 class AipToc:
     def __init__(self, filename: str):
         with open(filename) as f:
@@ -51,7 +64,7 @@ class AipToc:
         newentry = { k: v for k, v in entry.items() if not isinstance(v, list) }
 
         url = urllib.parse.urlparse(newentry['href'])
-        newentry['pageid'] = url.path.split('/')[-1].removesuffix('.html').lower()
+        newentry['pageid'] = removesuffix(url.path.split('/')[-1], '.html').lower()
 
         if 'folder' in entry:
             newentry['folder'] = []
@@ -527,7 +540,7 @@ class AipToc:
         url = urllib.parse.urlparse(page['href'])
         url = url.path.split('/')
         urlbase = url[1]
-        pageid = url[-1].removesuffix('.html')
+        pageid = removesuffix(url[-1], '.html')
 
         url = 'https://aip.dfs.de/%s/print/%s/%s/%s' % \
             (
