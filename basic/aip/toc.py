@@ -232,7 +232,7 @@ class AipToc:
         # Seitennummer der Textseiten in der AIP VFR bestimmen
         if self.toc_raw['type'] == 'VFR' and \
            len(path) == 2 and path[0] in [ "GEN", "ENR", "AD", "HEL AD" ]:
-            match = re.fullmatch(r'(GEN|ENR|AD|HEL AD) ([0-9])-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            match = re.fullmatch(r'(GEN|ENR|AD|HEL AD) ([0-9])[-\.]([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
 
             if match:
                 # Seite aus dem Flugplatzverzeichnis (AD 2) ignorieren, die
@@ -241,6 +241,11 @@ class AipToc:
                     return None, None, None, None
 
                 return None, match[3], match[4], match[6]
+
+            # Bei einigen VFR ADs fehlt Präfix "AD 2".
+            match = re.fullmatch(r'([0-9]+) (.+)', entry['name'])
+            if match:
+                return None, match[1], None, match[2]
 
         # Seitennummer der Textseiten in der AIP IFR bestimmen
         if self.toc_raw['type'] == 'IFR' and \
