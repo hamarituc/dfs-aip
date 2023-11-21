@@ -228,32 +228,42 @@ def pdf_summary(args):
 
     out = pikepdf.Pdf.new()
 
-    for pageodd, pageeven in pagepairs:
-        if pageodd is None:
-            pdfodd = None
-            boxodd = None
-        else:
-            fileodd = toc.fetchpage(pageodd, refresh = args.refresh)
-            pdfodd = pikepdf.Pdf.open(fileodd)
-            boxodd = pdfodd.pages[0].trimbox
+    page_count = 0
+    with out.open_outline() as outline:
+        for pageodd, pageeven in pagepairs:
+            if pageodd is None:
+                pdfodd = None
+                boxodd = None
+            else:
+                fileodd = toc.fetchpage(pageodd, refresh = args.refresh)
+                pdfodd = pikepdf.Pdf.open(fileodd)
+                boxodd = pdfodd.pages[0].trimbox
 
-        if pageeven is None:
-            pdfeven = None
-            boxeven = None
-        else:
-            fileeven = toc.fetchpage(pageeven, refresh = args.refresh)
-            pdfeven = pikepdf.Pdf.open(fileeven)
-            boxeven = pdfeven.pages[0].mediabox
+            if pageeven is None:
+                pdfeven = None
+                boxeven = None
+            else:
+                fileeven = toc.fetchpage(pageeven, refresh = args.refresh)
+                pdfeven = pikepdf.Pdf.open(fileeven)
+                boxeven = pdfeven.pages[0].mediabox
 
-        if pageodd is not None:
-            out.pages.append(pdfodd.pages[0])
-        elif args.pairs:
-            out.add_blank_page(page_size = ( abs(boxeven[2] - boxeven[0]), abs(boxeven[3] - boxeven[1]) ))
+            if pageodd is not None:
+                pagename = pageodd["name"]
+                outline.root.append(pikepdf.OutlineItem(pagename, page_count))
+                out.pages.append(pdfodd.pages[0])
+                page_count += 1
+            elif args.pairs:
+                out.add_blank_page(page_size = ( abs(boxeven[2] - boxeven[0]), abs(boxeven[3] - boxeven[1]) ))
+                page_count += 1
 
-        if pageeven is not None:
-            out.pages.append(pdfeven.pages[0])
-        elif args.pairs:
-            out.add_blank_page(page_size = ( abs(boxodd[2] - boxodd[0]), abs(boxodd[3] - boxodd[1]) ))
+            if pageeven is not None:
+                pagename = pageeven["name"]
+                outline.root.append(pikepdf.OutlineItem(pagename, page_count))
+                out.pages.append(pdfeven.pages[0])
+                page_count += 1
+            elif args.pairs:
+                out.add_blank_page(page_size = ( abs(boxodd[2] - boxodd[0]), abs(boxodd[3] - boxodd[1]) ))
+                page_count += 1
 
     out.save(
         args.output,
