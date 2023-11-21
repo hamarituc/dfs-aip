@@ -227,6 +227,8 @@ def pdf_summary(args):
     toc, pagepairs = prepare_pagepairs(args, args.pairs)
 
     out = pikepdf.Pdf.new()
+    out.Root.PageLayout = pikepdf.Name.SinglePage
+    out.Root.PageMode = pikepdf.Name.UseOutlines
 
     page_count = 0
     with out.open_outline() as outline:
@@ -268,5 +270,6 @@ def pdf_summary(args):
     out.save(
         args.output,
         object_stream_mode = pikepdf.ObjectStreamMode.generate,
-        stream_decode_level = pikepdf.StreamDecodeLevel.specialized
+        stream_decode_level = pikepdf.StreamDecodeLevel.specialized,
+        linearize = True
     )
