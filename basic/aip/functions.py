@@ -255,4 +255,8 @@ def pdf_summary(args):
         elif args.pairs:
             out.add_blank_page(page_size = ( abs(boxodd[2] - boxodd[0]), abs(boxodd[3] - boxodd[1]) ))
 
-    out.save(args.output)
+    out.save(
+        args.output,
+        object_stream_mode = pikepdf.ObjectStreamMode.generate,
+        stream_decode_level = pikepdf.StreamDecodeLevel.specialized
+    )
