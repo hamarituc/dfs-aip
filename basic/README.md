@@ -253,3 +253,12 @@ haben.
 ```
 $ ./aip.py pdf --output amdt-2023-04.pdf summary --vfr -b 2023-03-09 -a 2023-04-06 --pairs
 ```
+
+
+Danksagung
+----------
+
+Für Weiterentwicklung, Fehlerbeseitigung und Anregungen danke ich (in
+zeitlicher Reihenfolge der Erstbeiträge):
+
+ * Franz Pletz <fpletz@fnordicwalking.de>
