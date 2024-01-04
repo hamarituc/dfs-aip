@@ -242,10 +242,13 @@ class AipToc:
 
                 return None, match[3], match[4], match[6]
 
-            # Bei einigen VFR ADs fehlt Präfix "AD 2".
-            match = re.fullmatch(r'([0-9]+) (.+)', entry['name'])
-            if match:
-                return None, match[1], None, match[2]
+            # Bei einigen VFR ADs fehlt Präfix "AD 2", z.B. (AIRAC 2023-12-14)
+            #  - "AD 2-4 Ailertchen" (normal)
+            #  - "5 Allstedt" (Spezialfall)
+            if path[0] == "AD" and path[1] == "2":
+                match = re.fullmatch(r'([0-9]+)([A-Za-z])? (.+)', entry['name'])
+                if match:
+                    return None, match[1], match[2], match[3]
 
         # Seitennummer der Textseiten in der AIP IFR bestimmen
         if self.toc_raw['type'] == 'IFR' and \
