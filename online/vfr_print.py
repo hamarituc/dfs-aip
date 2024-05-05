@@ -215,7 +215,7 @@ def placepage(pdf, target, source,
     obj = pdf.copy_foreign(sourcepage.as_form_xobject())
     name = targetpage.add_resource(obj, pikepdf.Name.XObject)
 
-    m = pikepdf.PdfMatrix()
+    m = pikepdf.Matrix()
 
     # Abmessungen bestimmen.
     box_left   = float(min(sourcepage.trimbox[0], sourcepage.trimbox[2]))
@@ -229,43 +229,43 @@ def placepage(pdf, target, source,
     rotation = source['page'].Rotate if '/Rotate' in source['page'] else 0
 
     # Anzeigeausrichtung kompensieren. Karte an unterer linken Ecke ausrichten.
-    m = m.rotated(rotation)
-    m = m.translated(-box_left, -box_bottom)
-    m = m.rotated(-rotation)
+    m = m @ pikepdf.Matrix().rotated(rotation)
+    m = m @ pikepdf.Matrix().translated(-box_left, -box_bottom)
+    m = m @ pikepdf.Matrix().rotated(-rotation)
 
     # Kartenmitte in den Ursprung schieben.
     if rotation % 180:
         box_width, box_height = box_height, box_width
 
-    m = m.translated(-box_width / 2.0, -box_height / 2.0)
+    m = m @ pikepdf.Matrix().translated(-box_width / 2.0, -box_height / 2.0)
 
     # Seiten mit falscher Ausrichtung so drehen, dass man sie von rechts lesen kann.
     if landscape:
         if box_width < box_height:
-            m = m.rotated(90)
+            m = m @ pikepdf.Matrix().rotated(90)
             box_width, box_height = box_height, box_width
     else:
         if box_width > box_height:
-            m = m.rotated(90)
+            m = m @ pikepdf.Matrix().rotated(90)
             box_width, box_height = box_height, box_width
 
     # Seite so drehen, dass der Heftrand in der Mitte liegt, damit die
     # Schnittkante auf den Heftrand fällt.
     if turn:
-        m = m.rotated(180)
+        m = m @ pikepdf.Matrix().rotated(180)
 
     # Untere linke Ecke in den Ursprung schieben.
-    m = m.translated(box_width / 2.0, box_height / 2.0)
+    m = m @ pikepdf.Matrix().translated(box_width / 2.0, box_height / 2.0)
 
     if scale is not None:
         # Skalierungszentrum in den Ursprung rücken.
-        m = m.translated(-offx, -offy)
+        m = m @ pikepdf.Matrix().translated(-offx, -offy)
 
         # Skalieren.
-        m = m.scaled(scale, scale)
+        m = m @ pikepdf.Matrix().scaled(scale, scale)
 
     # Seite platzieren.
-    m = m.translated(shiftx, shifty)
+    m = m @ pikepdf.Matrix().translated(shiftx, shifty)
 
     commands = []
     commands.append(( [],                         pikepdf.Operator('q')  ))
