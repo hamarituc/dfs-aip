@@ -107,6 +107,16 @@ for filename, pages, _ in pdfs:
         if rotation % 180:
             width, height = height, width
 
+        # Genau genommen gibt es keine reinen A4-Seiten. Stattdessen ist es
+        # wahrscheinlicher, dass die Zuschnittsbox der Seite falsch angelegt
+        # wurde (z.B. AD-2 EDDC-2). Wir kürzen die Seite ein, sodass eine auf
+        # A5 einklappbare Seite entsteht.
+        if ( width, height ) == ( 210, 297 ):
+            box_height = 277
+            box_top = box_bottom + box_height
+            box = [ round(float(x) / 25.4 * 72.0) for x in [ box_left, box_bottom, box_right, box_top ] ]
+            page.trimbox = box
+
         pagedict = \
         {
             'page':      p,
