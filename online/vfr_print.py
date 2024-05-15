@@ -92,7 +92,7 @@ for filename, pages, _ in pdfs:
 
         page = pikepdf.Page(p)
 
-        box = [ round((float(x) / 72.0 * 25.4)) for x in page.trimbox ]
+        box = [ round(float(x) / 72.0 * 25.4) for x in page.trimbox ]
         box_left   = min(box[0], box[2])
         box_right  = max(box[0], box[2])
         box_bottom = min(box[1], box[3])
@@ -144,7 +144,7 @@ for filename, pages, _ in pdfs:
                  width > height and not PAGES_A4N[-1]['landscape'] or
                  width < height and     PAGES_A4N[-1]['landscape']
                ):
-                # Folge eine schmale A4-Seite im Hochformat auf eine schmale,
+                # Folgt eine schmale A4-Seite im Hochformat auf eine schmale,
                 # ungerade A4-Seite im Querformat oder umgekehrt (Querformat
                 # folgt auf Hochformat), dann wird eine Leerseite eingefügt,
                 # weil beide Seiten ungerade sind.
