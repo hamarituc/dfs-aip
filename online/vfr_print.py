@@ -126,11 +126,9 @@ for filename, pages, _ in pdfs:
             termchart = False
             pagedict['format'] = 'A5'
 
-            if lastlist is PAGES_A4N and len(PAGES_A4N) % 2 and \
-               PAGES_A4N[-1]['landscape'] and width < height:
-                # Eine hochformatige A5-Seite, die auf eine querformatige,
-                # kurze, ungerade A4-Seite folgt, wird auf die Rückseite der
-                # A4-Seite gedruckt.
+            if lastlist is PAGES_A4N and len(PAGES_A4N) % 2 and width < height:
+                # Eine hochformatige A5-Seite, die auf eine kurze, ungerade
+                # A4-Seite folgt, wird auf die Rückseite der A4-Seite gedruckt.
                 lastlist = PAGES_A4N
             else:
                 lastlist = PAGES_A5
