@@ -320,7 +320,7 @@ class AipToc:
         # Flugplatzkarten für Abschnitt "MIL-AD" behandeln
         if self.toc_raw['type'] == 'IFR' and \
            len(path) == 4 and path[0] == "AD" and path[1] == "MIL" and path[2] == "2":
-            match = re.fullmatch(r'AD 2 E[DT][A-Z][A-Z] ([0-9])-([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
+            match = re.fullmatch(r'AD 2 E[DT][A-Z][A-Z] ([0-9])[- ]([0-9]+)([A-Za-z])?( (.+))?', entry['name'])
             if match:
                 return match[1], match[2], match[3], match[5]
 
