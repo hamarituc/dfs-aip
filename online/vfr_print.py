@@ -52,19 +52,14 @@ parser.add_argument(
     help = 'Faltmarken zeichnen')
 
 parser.add_argument(
-    '--a3-to-a4',
-    action = 'store_true',
-    help = 'A3-Seiten auf A4 verkleinern')
-
-parser.add_argument(
-    '--a2-to-a4',
-    action = 'store_true',
-    help = 'A2-Seiten auf A4 verkleinern')
-
-parser.add_argument(
     '--tc-to-a4',
     action = 'store_true',
     help = 'Terminal Charts auf A4 verkleinern')
+
+parser.add_argument(
+    '--misc-to-a4',
+    action = 'store_true',
+    help = 'Unbekannte Formate auf A4 verkleinern')
 
 parser.add_argument(
     'pdfs',
@@ -77,12 +72,11 @@ args = parser.parse_args()
 
 
 
-PAGES_A5  = []
-PAGES_A4N = []
-PAGES_A4  = []
-PAGES_A3  = []
-PAGES_A2  = []
-PAGES_TC  = []
+PAGES_A5   = []
+PAGES_A4N  = []
+PAGES_A4   = []
+PAGES_TC   = []
+PAGES_MISC = []
 
 
 
@@ -170,14 +164,6 @@ for filename, pages, _ in pdfs:
             pagedict['format'] = 'A4'
             nextlist = PAGES_A4
 
-        elif ( box_width, box_height ) in [ ( 297, 420 ), ( 420, 297 ) ]:
-            pagedict['format'] = 'A3'
-            nextlist = PAGES_A3
-
-        elif ( box_width, box_height ) in [ ( 420, 594 ), ( 594, 420 ) ]:
-            pagedict['format'] = 'A2'
-            nextlist = PAGES_A2
-
         elif ( box_width, box_height ) in [ ( 297, 380 ), ( 380, 297 ) ]:
             pagedict['format'] = 'TC'
 
@@ -186,6 +172,21 @@ for filename, pages, _ in pdfs:
             if currlist is not PAGES_TC and len(PAGES_TC) % 2 != 0:
                 PAGES_TC.append(None)
             nextlist = PAGES_TC
+
+        elif args.misc_to_a4:
+            # Eine Lücke lassen, wenn das Vorgängerformat nicht passt.
+            if len(PAGES_MISC) and PAGES_MISC[-1] is not None:
+                lastpage = PAGES_MISC[-1]
+                if ( pagedict['width'], pagedict['height'] ) != ( lastpage['width'], lastpage['height'] ) and \
+                   ( pagedict['width'], pagedict['height'] ) != ( lastpage['height'], lastpage['width'] ):
+                    PAGES_MISC.append(None)
+
+            pagedict['format'] = 'MISC'
+            if pagedict['landscape']:
+                pagedict['scale'] = min(1.0, 297.0 / pagedict['width'], 210.0 / pagedict['height'])
+            else:
+                pagedict['scale'] = min(1.0, 210.0 / pagedict['width'], 297.0 / pagedict['height'])
+            nextlist = PAGES_MISC
 
         else:
             raise Exception(
@@ -213,19 +214,16 @@ for filename, pages, _ in pdfs:
         PAGES_A4N.append(None)
     if len(PAGES_A4) % 2 != 0:
         PAGES_A4.append(None)
-    if len(PAGES_A3) % 2 != 0:
-        PAGES_A3.append(None)
-    if len(PAGES_A2) % 2 != 0:
-        PAGES_A2.append(None)
     if len(PAGES_TC) % 2 != 0:
         PAGES_TC.append(None)
+    if len(PAGES_MISC) % 2 != 0:
+        PAGES_MISC.append(None)
 
 PAGES_A5.extend((-len(PAGES_A5) % 4) * [ None ])
 PAGES_A4N.extend((-len(PAGES_A4N) % 2) * [ None ])
 PAGES_A4.extend((-len(PAGES_A4) % 2) * [ None ])
-PAGES_A3.extend((-len(PAGES_A3) % 2) * [ None ])
-PAGES_A2.extend((-len(PAGES_A2) % 2) * [ None ])
 PAGES_TC.extend((-len(PAGES_TC) % 2) * [ None ])
+PAGES_MISC.extend((-len(PAGES_MISC) % 2) * [ None ])
 
 
 
@@ -517,56 +515,6 @@ for i in range(0, len(PAGES_A4), 2):
     p2.remove_unreferenced_resources()
 
 
-for i in range(0, len(PAGES_A3), 2):
-    if args.a3_to_a4:
-        # Zwei leere A4-Zielseiten anlegen.
-        OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
-        OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
-
-        placepage(OUT, OUT.pages[-2], PAGES_A3[i + 0], landscape = True, turn = False, scale = 0.71)
-        placepage(OUT, OUT.pages[-1], PAGES_A3[i + 1], landscape = True, turn = True,  scale = 0.71)
-
-    else:
-        # Zwei leere A3-Zielseiten anlegen.
-        OUT.add_blank_page(page_size = ( 420 / 25.4 * 72.0, 297 / 25.4 * 72.0 ))
-        OUT.add_blank_page(page_size = ( 420 / 25.4 * 72.0, 297 / 25.4 * 72.0 ))
-
-        placepage(OUT, OUT.pages[-2], PAGES_A3[i + 0], landscape = True, turn = False)
-        placepage(OUT, OUT.pages[-1], PAGES_A3[i + 1], landscape = True, turn = True)
-
-    p1 = pikepdf.Page(OUT.pages[-2])
-    p2 = pikepdf.Page(OUT.pages[-1])
-    p1.contents_coalesce()
-    p2.contents_coalesce()
-    p1.remove_unreferenced_resources()
-    p2.remove_unreferenced_resources()
-
-
-for i in range(0, len(PAGES_A2), 2):
-    if args.a2_to_a4:
-        # Zwei leere A4-Zielseiten anlegen.
-        OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
-        OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
-
-        placepage(OUT, OUT.pages[-2], PAGES_A2[i + 0], landscape = True, turn = False, scale = 0.5)
-        placepage(OUT, OUT.pages[-1], PAGES_A2[i + 1], landscape = True, turn = True,  scale = 0.5)
-
-    else:
-        # Zwei leere A2-Zielseiten anlegen.
-        OUT.add_blank_page(page_size = ( 594 / 25.4 * 72.0, 420 / 25.4 * 72.0 ))
-        OUT.add_blank_page(page_size = ( 594 / 25.4 * 72.0, 420 / 25.4 * 72.0 ))
-
-        placepage(OUT, OUT.pages[-2], PAGES_A2[i + 0], landscape = True, turn = False)
-        placepage(OUT, OUT.pages[-1], PAGES_A2[i + 1], landscape = True, turn = True)
-
-    p1 = pikepdf.Page(OUT.pages[-2])
-    p2 = pikepdf.Page(OUT.pages[-1])
-    p1.contents_coalesce()
-    p2.contents_coalesce()
-    p1.remove_unreferenced_resources()
-    p2.remove_unreferenced_resources()
-
-
 for i in range(0, len(PAGES_TC), 2):
     if args.tc_to_a4:
         # Zwei leere A4-Zielseiten anlegen.
@@ -611,6 +559,24 @@ for i in range(0, len(PAGES_TC), 2):
         placepage(OUT, OUT.pages[-1], PAGES_TC[i + 1], landscape = True, turn = True)
 
         marks_a3(OUT, OUT.pages[-2], cropmark = args.cropmark, punchmark = args.punchmark, foldmark = args.foldmark)
+
+    p1 = pikepdf.Page(OUT.pages[-2])
+    p2 = pikepdf.Page(OUT.pages[-1])
+    p1.contents_coalesce()
+    p2.contents_coalesce()
+    p1.remove_unreferenced_resources()
+    p2.remove_unreferenced_resources()
+
+
+for i in range(0, len(PAGES_MISC), 2):
+    # Zwei leere A4-Zielseiten anlegen.
+    OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
+    OUT.add_blank_page(page_size = ( 297 / 25.4 * 72.0, 210 / 25.4 * 72.0 ))
+
+    pg1 = PAGES_MISC[i + 0]
+    pg2 = PAGES_MISC[i + 1]
+    placepage(OUT, OUT.pages[-2], pg1, landscape = True if pg1 is None else pg1['landscape'], turn = False, scale = 1.0 if pg1 is None else pg1['scale'])
+    placepage(OUT, OUT.pages[-1], pg2, landscape = True if pg1 is None else pg1['landscape'], turn = True,  scale = 1.0 if pg2 is None else pg2['scale'])
 
     p1 = pikepdf.Page(OUT.pages[-2])
     p2 = pikepdf.Page(OUT.pages[-1])
