@@ -576,8 +576,28 @@ for i in range(0, len(PAGES_MISC), 2):
 
     pg1 = PAGES_MISC[i + 0]
     pg2 = PAGES_MISC[i + 1]
-    placepage(OUT, OUT.pages[-2], pg1, landscape = True if pg1 is None else pg1['landscape'], turn = False, scale = 1.0 if pg1 is None else pg1['scale'])
-    placepage(OUT, OUT.pages[-1], pg2, landscape = True if pg1 is None else pg1['landscape'], turn = True,  scale = 1.0 if pg2 is None else pg2['scale'])
+
+    if pg1 is None:
+        landscape1 = True
+        scale1 = 1.0
+        shifty1 = 0
+    else:
+        landscape1 = pg1['landscape']
+        scale1 = pg1['scale']
+        if landscape1:
+            shifty1 = 210 - scale1 * pg1['height']
+        else:
+            shifty1 = 210 - scale1 * pg1['width']
+
+    if pg2 is None:
+        landscape2 = True
+        scale2 = 1.0
+    else:
+        landscape2 = pg2['landscape']
+        scale2 = pg2['scale']
+
+    placepage(OUT, OUT.pages[-2], pg1, landscape = landscape1, turn = False, scale = scale1, shifty = shifty1 / 25.4 * 72.0)
+    placepage(OUT, OUT.pages[-1], pg2, landscape = landscape2, turn = True,  scale = scale2)
 
     p1 = pikepdf.Page(OUT.pages[-2])
     p2 = pikepdf.Page(OUT.pages[-1])
