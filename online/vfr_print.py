@@ -176,7 +176,7 @@ for filename, pages, _ in pdfs:
 
         elif args.misc_to_a4:
             # Eine Lücke lassen, wenn das Vorgängerformat nicht passt.
-            if len(PAGES_MISC) and PAGES_MISC[-1] is not None:
+            if len(PAGES_MISC) % 2 and PAGES_MISC[-1] is not None:
                 lastpage = PAGES_MISC[-1]
                 if ( pagedict['width'], pagedict['height'] ) != ( lastpage['width'], lastpage['height'] ) and \
                    ( pagedict['width'], pagedict['height'] ) != ( lastpage['height'], lastpage['width'] ):
