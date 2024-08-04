@@ -20,6 +20,7 @@
 
 import argparse
 import pikepdf
+import sys
 
 from aip import load_pages
 
@@ -189,8 +190,8 @@ for filename, pages, _ in pdfs:
             nextlist = PAGES_MISC
 
         else:
-            raise Exception(
-                "Seite %s von '%s' hat ein unbekanntes Format %dmm x %dmm" %
+            sys.stderr.write(
+                "Seite %s von '%s' hat ein unbekanntes Format %dmm x %dmm. Seite bitte manuell drucken.\n" %
                 (
                     page.label,
                     filename,
