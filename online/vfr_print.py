@@ -19,7 +19,6 @@
 #
 
 import argparse
-import math
 import pikepdf
 
 from aip import load_pages
@@ -79,14 +78,11 @@ pdfs = load_pages(args.pdfs)
 
 for filename, pages, _ in pdfs:
     lastlist = None
-    blankpages = 0
     termchart = True
 
     for p in pages:
         if p is None:
-            if lastlist is None:
-                blankpages += 1
-            else:
+            if lastlist is not None:
                 lastlist.append(None)
             continue
 
