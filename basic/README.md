@@ -13,8 +13,8 @@ Die VFR- und IFR-Ausgaben des deutschen Luftfahrthandbuchs werden von der
 Deutschen Flugsicherung nur online herausgegeben. Seit Anfang 2023 ist die
 VFR-Ausgabe kostenfrei verfügbar (IFR bereits länger). Die Daten können unter
 
- * https://aip.dfs.de/BasicVFR
- * https://aip.dfs.de/BasicIFR
+ * https://aip.dfs.de/BasicVFR/
+ * https://aip.dfs.de/BasicIFR/
 
 abgerufen werden. Die Daten werden als Einzelseiten bereitgestellt -- für die
 AIP-IFR als PDF-Dateien, für die AIP-VFR leider nur als Rasterbilder. Legt man

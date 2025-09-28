@@ -32,11 +32,11 @@ class AipCache:
     {
         'VFR':
         {
-            'url': 'https://aip.dfs.de/basicVFR',
+            'url': 'https://aip.dfs.de/BasicVFR/',
         },
         'IFR':
         {
-            'url': 'https://aip.dfs.de/basicIFR',
+            'url': 'https://aip.dfs.de/BasicIFR/',
         },
     }
 
