@@ -71,7 +71,7 @@ class AipCache:
     #
     def current_airac(self, aiptype):
         # Startseite abrufen
-        response = requests.get(self._TYPES[aiptype]['url'])
+        response = requests.get(self._TYPES[aiptype]['url'], headers = { 'User-Agent': 'AIP Download Tool' })
         response.raise_for_status()
 
         # Startseite parsen
@@ -160,7 +160,7 @@ class AipCache:
     # Einen Unterordner herunterladen
     #
     def _fetch_folder(self, url: str, depth: int = 0, debug: bool = False):
-        response = requests.get(url)
+        response = requests.get(url, headers = { 'User-Agent': 'AIP Download Tool' })
         response.raise_for_status()
 
         # Ggf. einem Meta-Redirect folgen
@@ -172,7 +172,7 @@ class AipCache:
 
             url = metarefresh['content'].split(';')[1].strip().split('=', maxsplit = 1)[1]
             url = urllib.parse.urljoin(response.url, url)
-            response = requests.get(url)
+            response = requests.get(url, headers = { 'User-Agent': 'AIP Download Tool' })
             response.raise_for_status()
 
         result = {}

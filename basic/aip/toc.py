@@ -509,7 +509,7 @@ class AipToc:
         print(page['name'])
 
         # Seite abrufen
-        response = requests.get(page['href'])
+        response = requests.get(page['href'], headers = { 'User-Agent': 'AIP Download Tool' })
         response.raise_for_status()
 
         # Seite parsen
@@ -559,7 +559,7 @@ class AipToc:
             )
 
         # Seite abrufen
-        response = requests.get(url, headers = { 'referer': page['href'] })
+        response = requests.get(url, headers = { 'referer': page['href'], 'User-Agent': 'AIP Download Tool' })
         response.raise_for_status()
 
         content_type = response.headers['content-type'].split(';')[0]
